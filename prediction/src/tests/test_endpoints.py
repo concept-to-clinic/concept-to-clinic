@@ -11,6 +11,9 @@ import pytest
 
 from flask import url_for
 from src.factory import create_app
+from src.algorithms import classify
+from src.algorithms import identify
+from src.algorithms import segment
 
 
 def get_data(response):
@@ -48,10 +51,22 @@ def test_endpoint_documentation(client):
     r = client.get(url)
     data = get_data(r)
 
-    assert 'description' in data
+    assert data['description'] == identify.trained_model.predict.__doc__
+
+    url = client.url_for('predict', algorithm='segment')
+    r = client.get(url)
+    data = get_data(r)
+
+    assert data['description'] == segment.trained_model.predict.__doc__
+
+    url = client.url_for('predict', algorithm='classify')
+    r = client.get(url)
+    data = get_data(r)
+
+    assert data['description'] == classify.trained_model.predict.__doc__
 
 
-def test_indentify(client):
+def test_identify(client):
     url = client.url_for('predict', algorithm='identify')
 
     test_data = dict(dicom_path='')
