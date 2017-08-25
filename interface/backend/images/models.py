@@ -1,4 +1,6 @@
 from django.db import models
+import os
+import dicom
 
 
 class ImageSeries(models.Model):
@@ -10,6 +12,22 @@ class ImageSeries(models.Model):
     series_instance_uid = models.CharField(max_length=256)
 
     uri = models.CharField(max_length=512)
+
+    def get_or_create(uri):
+        """
+        Given the absolute uri to a directory with DICOM images of a patient,
+        look up the ImageSeries with the same PatientID and SeriesInstanceUID.
+        If none exists so far, create one.
+        Return a tuple of (ImageSeries, created), where created is a boolean specifying whether the object was created.
+        :return: (ImageSeries, bool)
+        """
+        file_ = os.listdir(uri)[0]
+        plan = dicom.read_file(uri + file_)
+        patient_id = plan.PatienID
+        series_instance_uid = plan.SeriesInstanceUID
+        return ImageSeries.objects.get_or_create(
+            patient_id=patient_id,
+            series_instance_uid=series_instance_uid)
 
 
 class ImageLocation(models.Model):
