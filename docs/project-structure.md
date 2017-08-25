@@ -20,64 +20,63 @@ table#structure-table {
 <tbody>
  <tr>
   <td nowrap><code>├── compose</code></td>
-  <td>The compose folder contains all of the configuration for [Docker](https://www.docker.com)
-, including development and production. It defines docker [containers](https://docs.docker.com/glossary/?term=container)
- for two separate applications (interface and prediction) that are both run by [`docker-compose up`](https://docs.docker.com/compose).</td>
+  <td>The compose folder contains all of the configuration for <a href="https://www.docker.com">Docker</a>, including development and production. It defines docker <a href="https://docs.docker.com/glossary/?term=container">containers</a>
+ for two separate applications (interface and prediction) that are both run by <a href="https://docs.docker.com/compose">`docker-compose up`</a>.</td>
 </tr>
 <tr>
   <td nowrap><code>│   ├── interface</code></td>
-  <td>[Docker](https://www.docker.com)
+  <td><a href="https://www.docker.com">Docker</a>
  configuration for the interface application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── Dockerfile</code></td>
-  <td>Production [Docker](https://www.docker.com)
+  <td>Production <a href="https://www.docker.com">Docker</a>
  configuration for the interface application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── Dockerfile-dev</code></td>
-  <td>Development [Docker](https://www.docker.com)
+  <td>Development <a href="https://www.docker.com">Docker</a>
  configuration for the interface application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── entrypoint.sh</code></td>
-  <td>The script that is called when the docker [container](https://docs.docker.com/glossary/?term=container)
+  <td>The script that is called when the docker <a href="https://docs.docker.com/glossary/?term=container">container</a>
  is finished setting up.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── gunicorn.sh</code></td>
-  <td>Called by the [Dockerfile](https://docs.docker.com/glossary/?term=Dockerfile) to run the application in production.</td>
+  <td>Called by the <a href="https://docs.docker.com/glossary/?term=Dockerfile">Dockerfile</a> to run the application in production.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   └── start-dev.sh</code></td>
-  <td>Called by the [Dockerfile](https://docs.docker.com/glossary/?term=Dockerfile) to run the application in development mode.</td>
+  <td>Called by the <a href="https://docs.docker.com/glossary/?term=Dockerfile">Dockerfile</a> to run the application in development mode.</td>
 </tr>
 <tr>
   <td nowrap><code>│   └── prediction</code></td>
-  <td>[Docker](https://www.docker.com)
+  <td><a href="https://www.docker.com">Docker</a>
  configuration for the prediction application</td>
 </tr>
 <tr>
   <td nowrap><code>│       ├── Dockerfile</code></td>
-  <td>Production [Docker](https://www.docker.com)
+  <td>Production <a href="https://www.docker.com">Docker</a>
  configuration for the prediction application.</td>
 </tr>
 <tr>
   <td nowrap><code>│       ├── Dockerfile-dev</code></td>
-  <td>Development [Docker](https://www.docker.com)
+  <td>Development <a href="https://www.docker.com">Docker</a>
  configuration for the prediction application.</td>
 </tr>
 <tr>
   <td nowrap><code>│       └── gunicorn.sh</code></td>
-  <td>Called by the [Dockerfile](https://docs.docker.com/glossary/?term=Dockerfile) to uns the application in production.</td>
+  <td>Called by the <a href="https://docs.docker.com/glossary/?term=Dockerfile">Dockerfile</a> to uns the application in production.</td>
 </tr>
 <tr>
   <td nowrap><code>├── docs</code></td>
-  <td>A [sphinx](http://www.sphinx-doc.org/en/stable/index.html) project with all of the documentation for the application (Contents collapsed for this view).</td>
+  <td>A <a href="http://www.sphinx-doc.org/en/stable/index.html">sphinx</a> project with all of the documentation for the application (Contents collapsed for this view).</td>
 </tr>
 <tr>
   <td nowrap><code>├── interface</code></td>
-  <td>The frontend and backend that a clinician will interact with. Contains a [Django](https://www.djangoproject.com/) project using the [Django Rest Framework](http://www.django-rest-framework.org/) for the backend, and a [Vue.js](https://vuejs.org/) frontend project.</td>
+  <td>The frontend and backend that a clinician will interact with. Contains a <a href="https://www.djangoproject.com/">Django</a> project using the <a href="http://www.django-rest-framework.org/">Django Rest Framework</a> for the backend, and a <a href="https://vuejs.org/">Vue.js</a> frontend project.</td>
 </tr>
 <tr>
   <td nowrap><code>│   ├── assets</code></td>
@@ -109,7 +108,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── migrations</code></td>
-  <td>When the database schema changes (because a model changed) we need to create [migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), which are auto-generated code snippets to update the database to the new schema. These are generated by `manage.py makemigrations` and applied with `manage.py migrate`. These should never be edited by hand. (Folder collapsed).</td>
+  <td>When the database schema changes (because a model changed) we need to create <a href="https://docs.djangoproject.com/en/1.11/topics/migrations/">migrations</a>, which are auto-generated code snippets to update the database to the new schema. These are generated by `manage.py makemigrations` and applied with `manage.py migrate`. These should never be edited by hand. (Folder collapsed).</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── __init__.py</code></td>
@@ -125,7 +124,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── tests.py</code></td>
-  <td>Keep [testing](https://docs.pytest.org/en/latest/), my friends.</td>
+  <td>Keep <a href="https://docs.pytest.org/en/latest/">testing</a>, my friends.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── urls.py</code></td>
@@ -141,7 +140,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── migrations</code></td>
-  <td>When the database schema changes (because a model changed) we need to create [migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), which are auto-generated code snippets to update the database to the new schema. These are generated by `manage.py makemigrations` and applied with `manage.py migrate`. These should never be edited by hand. (Folder collapsed.)</td>
+  <td>When the database schema changes (because a model changed) we need to create <a href="https://docs.djangoproject.com/en/1.11/topics/migrations/">migrations</a>, which are auto-generated code snippets to update the database to the new schema. These are generated by `manage.py makemigrations` and applied with `manage.py migrate`. These should never be edited by hand. (Folder collapsed.)</td>
 </tr>
 
 <tr>
@@ -154,7 +153,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── factories.py</code></td>
-  <td>Code to generate example instances of the models. This will be used by the [tests](https://docs.pytest.org/en/latest/).</td>
+  <td>Code to generate example instances of the models. This will be used by the <a href="https://docs.pytest.org/en/latest/">tests</a>.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── models.py</code></td>
@@ -162,15 +161,15 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   └── tests.py</code></td>
-  <td>[Test, test, test, test](https://docs.pytest.org/en/latest/)!</td>
+  <td><a href="https://docs.pytest.org/en/latest/">Test, test, test, test</a>!</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── images</code></td>
-  <td>This component contains abstractions for a [DICOM](https://en.wikipedia.org/wiki/DICOM) image, including both the image series and </td>
+  <td>This component contains abstractions for a <a href="">DICOM</a> image, including both the image series and </td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── migrations</code></td>
-  <td>When the database schema changes (because a model changed) we need to create [migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), which are auto-generated code snippets to update the database to the new schema. These are generated by `manage.py makemigrations` and applied with `manage.py migrate`. These should never be edited by hand. (Folder collapsed).</td>
+  <td>When the database schema changes (because a model changed) we need to create <a href="https://docs.djangoproject.com/en/1.11/topics/migrations/">migrations</a>, which are auto-generated code snippets to update the database to the new schema. These are generated by `manage.py makemigrations` and applied with `manage.py migrate`. These should never be edited by hand. (Folder collapsed).</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── __init__.py</code></td>
@@ -182,7 +181,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── factories.py</code></td>
-  <td>Code to generate example instances of the models. This will be used by the [tests](https://docs.pytest.org/en/latest/).</td>
+  <td>Code to generate example instances of the models. This will be used by the <a href="https://docs.pytest.org/en/latest/">tests</a>.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── models.py</code></td>
@@ -190,7 +189,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   └── tests.py</code></td>
-  <td>Get the [test](https://docs.pytest.org/en/latest/) on.</td>
+  <td>Get the <a href="https://docs.pytest.org/en/latest/">test</a> on.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── static</code></td>
@@ -206,7 +205,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── tests.py</code></td>
-  <td>[Tests](https://docs.pytest.org/en/latest/) are good.</td>
+  <td><a href="https://docs.pytest.org/en/latest/">Tests</a> are good.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   └── urls.py</code></td>
@@ -218,11 +217,11 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   ├── config</code></td>
-  <td>Configuration for the interface [Django](https://www.djangoproject.com/) application.</td>
+  <td>Configuration for the interface <a href="https://www.djangoproject.com/">Django</a> application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── settings</code></td>
-  <td>The settings for the [Django](https://www.djangoproject.com/) application.</td>
+  <td>The settings for the <a href="https://www.djangoproject.com/">Django</a> application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── __init__.py</code></td>
@@ -242,7 +241,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   └── test.py</code></td>
-  <td>Don't stop [testing](https://docs.pytest.org/en/latest/).</td>
+  <td>Don't stop <a href="https://docs.pytest.org/en/latest/">testing</a>.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── __init__.py</code></td>
@@ -262,7 +261,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   └── index.html</code></td>
-  <td>Initial index page with simple [Vue.js](https://vuejs.org/) application.</td>
+  <td>Initial index page with simple <a href="https://vuejs.org/">Vue.js</a> application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   ├── requirements</code></td>
@@ -282,7 +281,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   ├── manage.py</code></td>
-  <td>The manage.py file provides commands for interacting with the [Django](https://www.djangoproject.com/) application.</td>
+  <td>The manage.py file provides commands for interacting with the <a href="https://www.djangoproject.com/">Django</a> application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   └── requirements.txt</code></td>
@@ -290,15 +289,15 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>├── prediction</code></td>
-  <td>The prediction application. This is a microservice that returns predictions for various ML tasks for a given [DICOM](https://en.wikipedia.org/wiki/DICOM) image. This separates the machine learning models from the interface application code.</td>
+  <td>The prediction application. This is a microservice that returns predictions for various ML tasks for a given <a href="https://en.wikipedia.org/wiki/DICOM">DICOM</a> image. This separates the machine learning models from the interface application code.</td>
 </tr>
 <tr>
   <td nowrap><code>│   ├── data</code></td>
-  <td>Use this folder to store [DICOM](https://en.wikipedia.org/wiki/DICOM) images for use in testing and training models. This folder is ignored by git, so the contents won't be synced to the repository.</td>
+  <td>Use this folder to store <a href="https://en.wikipedia.org/wiki/DICOM">DICOM</a> images for use in testing and training models. This folder is ignored by git, so the contents won't be synced to the repository.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   └── test</code></td>
-  <td>[Tests](https://docs.pytest.org/en/latest/) for the data.</td>
+  <td><a href="https://docs.pytest.org/en/latest/"></a>[Tests](https://docs.pytest.org/en/latest/) for the data.</td>
 </tr>
 <tr>
   <td nowrap><code>│   ├── requirements</code></td>
@@ -318,7 +317,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   ├── src</code></td>
-  <td>The source code for the prediction application. This application is a [Flask](http://flask.pocoo.org/) application (as opposed to the [Django](https://www.djangoproject.com/) application for the interface). This lightweight framework is good for serving simple endpoints and letting us focus on the algorithms.</td>
+  <td>The source code for the prediction application. This application is a <a href="http://flask.pocoo.org/">Flask</a> application (as opposed to the <a href="https://www.djangoproject.com/">Django</a> application for the interface). This lightweight framework is good for serving simple endpoints and letting us focus on the algorithms.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── algorithms</code></td>
@@ -330,7 +329,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   │   ├── assets</code></td>
-  <td>The assets folder should contain the fully trained model stored in a serialized state. These can be quite large, so this is managed by [git-lfs](https://git-lfs.github.com/).</td>
+  <td>The assets folder should contain the fully trained model stored in a serialized state. These can be quite large, so this is managed by <a href="https://git-lfs.github.com/">git-lfs</a>.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   │   ├── src</code></td>
@@ -342,11 +341,11 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   ├── identify</code></td>
-  <td>The identification model. For a given [DICOM](https://en.wikipedia.org/wiki/DICOM) image, return potential nodules.</td>
+  <td>The identification model. For a given <a href="https://en.wikipedia.org/wiki/DICOM">DICOM</a> image, return potential nodules.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   │   ├── assets</code></td>
-  <td>The assets folder should contain the fully trained model stored in a serialized state. These can be quite large, so this is managed by [git-lfs](https://git-lfs.github.com/).</td>
+  <td>The assets folder should contain the fully trained model stored in a serialized state. These can be quite large, so this is managed by <a href="https://git-lfs.github.com/">git-lfs</a>.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   │   ├── src</code></td>
@@ -358,11 +357,11 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   │   └── segment</code></td>
-  <td>The segmentation model. For a given [DICOM](https://en.wikipedia.org/wiki/DICOM) image and set of centroids, predict per-pixel values for the image representing if it is cancerous.</td>
+  <td>The segmentation model. For a given <a href="https://en.wikipedia.org/wiki/DICOM">DICOM</a> image and set of centroids, predict per-pixel values for the image representing if it is cancerous.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │       ├── assets</code></td>
-  <td>The assets folder should contain the fully trained model stored in a serialized state. These can be quite large, so this is managed by [git-lfs](https://git-lfs.github.com/).</td>
+  <td>The assets folder should contain the fully trained model stored in a serialized state. These can be quite large, so this is managed by <a href="https://git-lfs.github.com/">git-lfs</a>.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │       ├── src</code></td>
@@ -378,11 +377,11 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── tests</code></td>
-  <td>[Tests](https://docs.pytest.org/en/latest/) for the model prediction endpoints.</td>
+  <td><a href="https://docs.pytest.org/en/latest/">Tests</a> for the model prediction endpoints.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   │   └── test_endpoints.py</code></td>
-  <td>[Tests](https://docs.pytest.org/en/latest/) the endpoints.</td>
+  <td><a href="https://docs.pytest.org/en/latest/">Tests</a> the endpoints.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── __init__.py</code></td>
@@ -390,7 +389,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── factory.py</code></td>
-  <td>Creates and configures the [Flask](http://flask.pocoo.org/) application.</td>
+  <td>Creates and configures the <a href="http://flask.pocoo.org/">Flask</a> application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   │   ├── utils.py</code></td>
@@ -402,7 +401,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>│   ├── config.py</code></td>
-  <td>Configuration for the [Flask](http://flask.pocoo.org/) application.</td>
+  <td>Configuration for the <a href="http://flask.pocoo.org/">Flask</a> application.</td>
 </tr>
 <tr>
   <td nowrap><code>│   └── requirements.txt</code></td>
@@ -410,16 +409,16 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>├── tests</code></td>
-  <td>[Tests](https://docs.pytest.org/en/latest/) that exercise the entire architecture (i.e., both applications in tandem.)</td>
+  <td><a href="https://docs.pytest.org/en/latest/">Tests</a> that exercise the entire architecture (i.e., both applications in tandem.)</td>
 </tr>
 <tr>
   <td nowrap><code>│   ├── assets</code></td>
-  <td>Any large files that are required by the [tests](https://docs.pytest.org/en/latest/) for execution.</td>
+  <td>Any large files that are required by the <a href="https://docs.pytest.org/en/latest/">tests</a> for execution.</td>
 </tr>
 
 <tr>
   <td nowrap><code>│   └── test_docker.sh</code></td>
-  <td>Simple shell script to test that the [Docker](https://www.docker.com)
+  <td>Simple shell script to test that the <a href="https://www.docker.com">Docker</a>
  configuration is working for developers.</td>
 </tr>
 <tr>
@@ -444,12 +443,12 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>├── local.yml</code></td>
-  <td>[Docker](https://www.docker.com)
+  <td><a href="https://www.docker.com">Docker</a>
  configuration for the local development environment.</td>
 </tr>
 <tr>
   <td nowrap><code>├── production.yml</code></td>
-  <td>[Docker](https://www.docker.com)
+  <td><a href="https://www.docker.com">Docker</a>
  configuration for the production environment.</td>
 </tr>
 <tr>
@@ -458,7 +457,7 @@ table#structure-table {
 </tr>
 <tr>
   <td nowrap><code>└── setup.cfg</code></td>
-  <td>Configuration for the project for packages that accept configs. Currently configures style guides for [flake8](http://flake8.pycqa.org/en/latest/).</td>
+  <td>Configuration for the project for packages that accept configs. Currently configures style guides for <a href="http://flake8.pycqa.org/en/latest/">flake8</a>.</td>
 </tr>
 
 </tbody>
