@@ -70,7 +70,7 @@ def predict(algorithm):
     # describe API on GET
     elif request.method == 'GET':
         response.update({
-            'description': 'API documentation goes here.',
+            'description': PREDICTORS[algorithm].__doc__,
         })
 
     # make predictions on POST
@@ -81,11 +81,7 @@ def predict(algorithm):
         try:
             predict_method = PREDICTORS[algorithm]
 
-            if 'centroids' in payload:
-                prediction = predict_method(payload['dicom_path'],
-                                            payload['centroids'])
-            else:
-                prediction = predict_method(payload['dicom_path'])
+            prediction = predict_method(**payload)
 
             response.update({
                 'prediction': prediction
