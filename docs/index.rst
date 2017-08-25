@@ -28,6 +28,15 @@ Welcome to Concept to Clinic's documentation!
    code-of-conduct-link
    contributor-license-agreement-link
 
+Code
+====
+.. toctree::
+   :maxdepth: 2
+
+   _apidoc_interface/modules
+   _apidoc_prediction/modules
+
+
 
 Indices and tables
 ==================

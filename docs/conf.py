@@ -20,15 +20,14 @@
 import os
 import sys
 
-DOCS_DIR = os.path.abspath(__file__)
-PROJECT_DIR = os.path.join(DOCS_DIR, os.path.pardir)
+DOCS_DIR = os.getcwd()
+PROJECT_DIR = os.path.abspath(os.path.join(DOCS_DIR, os.pardir))
 
 INTERFACE_DIR = os.path.join(PROJECT_DIR, 'interface')
 sys.path.insert(0, INTERFACE_DIR)
 
 PREDICTION_DIR = os.path.join(PROJECT_DIR, 'prediction')
 sys.path.insert(0, PREDICTION_DIR)
-
 
 # -- General configuration ------------------------------------------------
 
@@ -41,8 +40,21 @@ sys.path.insert(0, PREDICTION_DIR)
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest'
+    'sphinx.ext.doctest',
+    'sphinx.ext.napoleon',
 ]
+
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
