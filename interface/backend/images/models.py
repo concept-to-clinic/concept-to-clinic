@@ -1,6 +1,6 @@
 from django.db import models
-import os
 import dicom
+import glob
 
 
 class ImageSeries(models.Model):
@@ -21,9 +21,9 @@ class ImageSeries(models.Model):
         Return a tuple of (ImageSeries, created), where created is a boolean specifying whether the object was created.
         :return: (ImageSeries, bool)
         """
-        file_ = os.listdir(uri)[0]
-        plan = dicom.read_file(uri + file_)
-        patient_id = plan.PatienID
+        file_ = glob.glob1(uri, '*.dcm')[0]
+        plan = dicom.read_file(uri + "/" + file_)
+        patient_id = plan.PatientID
         series_instance_uid = plan.SeriesInstanceUID
         return ImageSeries.objects.get_or_create(
             patient_id=patient_id,
