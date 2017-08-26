@@ -16,11 +16,15 @@ class ImageSeries(models.Model):
 
     def get_or_create(uri):
         """
-        Given the absolute uri to a directory with DICOM images of a patient,
-        look up the ImageSeries with the same PatientID and SeriesInstanceUID.
-        If none exists so far, create one.
+        Return the ImageSeries instance with the same PatientID and SeriesInstanceUID as the DICOM images in the
+        given directory. If none exists so far, create one.
         Return a tuple of (ImageSeries, created), where created is a boolean specifying whether the object was created.
-        :return: (ImageSeries, bool)
+
+        Args:
+            uri (str): absolute URI to a directory with DICOM images of a patient
+
+        Returns:
+            (ImageSeries, bool): the looked up ImageSeries instance and whether it had to be created
         """
         file_ = glob.glob1(uri, '*.dcm')[0]
         plan = dicom.read_file(safe_join(uri, file_))
@@ -28,7 +32,8 @@ class ImageSeries(models.Model):
         series_instance_uid = plan.SeriesInstanceUID
         return ImageSeries.objects.get_or_create(
             patient_id=patient_id,
-            series_instance_uid=series_instance_uid)
+            series_instance_uid=series_instance_uid,
+            uri=uri)
 
 
 class ImageLocation(models.Model):
@@ -42,3 +47,4 @@ class ImageLocation(models.Model):
     y = models.PositiveSmallIntegerField(help_text='Voxel index for Y axis, zero-index, from top left')
 
     z = models.PositiveSmallIntegerField(help_text='Slice index for Z axis, zero-index')
+

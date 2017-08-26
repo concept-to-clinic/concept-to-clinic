@@ -17,7 +17,9 @@ class SmokeTest(TestCase):
         assert created
         assert image_series.patient_id == 'LIDC-IDRI-0001'
         assert image_series.series_instance_uid == '1.3.6.1.4.1.14519.5.2.1.6279.6001.179049373636438705059720603192'
+        assert image_series.uri == uri
         image_series, created = ImageSeries.get_or_create(uri)
         assert not created
         assert image_series.patient_id == 'LIDC-IDRI-0001'
         assert image_series.series_instance_uid == '1.3.6.1.4.1.14519.5.2.1.6279.6001.179049373636438705059720603192'
+        assert image_series.uri == uri
