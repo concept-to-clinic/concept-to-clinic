@@ -2,9 +2,12 @@
 """
     algorithms.segment.trained_model
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     An API for a trained segmentation model to predict nodule boundaries and
     descriptive statistics.
 """
+
+
 import numpy as np
 import os
 import scipy.ndimage
