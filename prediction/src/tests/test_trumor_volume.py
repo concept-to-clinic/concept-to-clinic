@@ -32,7 +32,7 @@ def test_calculate_volume_on_unoverlapped_connected_components():
     path = os.path.join('.', 'tmp', 'mask.npy')
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
-#   The balls modelled to be not overlapped 
+    #   The balls modelled to be not overlapped 
     np.save(path, mask)
     assert os.path.exists(path)
     
@@ -47,7 +47,7 @@ def test_calculate_volume_on_overlapped_connected_components():
     centroids = [[0, 0, 0], [0, 0, 0], [45, 45, 12]]
     centroids = [{'x': centroid[0], 'y': centroid[1], 'z': centroid[2]} for centroid in centroids]
     mask = generate_mask(shape=[50, 50, 29], centroids=centroids, volumes=[100, 20, 30])
-#   The balls area must be 100 + 30, since first ball have overlapped with the second one
+    #   The balls area must be 100 + 30, since first ball have overlapped with the second one
     assert mask.sum() == 130
     
     path = os.path.join('.', 'tmp', 'mask.npy')
@@ -58,12 +58,12 @@ def test_calculate_volume_on_overlapped_connected_components():
     assert os.path.exists(path)
     
     volumes_calculated = trained_model.calculate_volume(path, centroids, voxel_shape=[1., 1., 1.])
-#   Despite they are overlapped, the amount of volumes must have preserved
+    #   Despite they are overlapped, the amount of volumes must have preserved
     assert len(volumes_calculated) == 3
     assert volumes_calculated == [100, 100, 30]
     
     volumes_calculated = trained_model.calculate_volume(path, centroids, voxel_shape=[.5, 1., 1.5])
-#   Despite they are overlapped, the amount of volumes must have preserved
+    #   Despite they are overlapped, the amount of volumes must have preserved
     assert len(volumes_calculated) == 3
     assert volumes_calculated == [75., 75., 22.5]
     shutil.rmtree(os.path.dirname(path))
