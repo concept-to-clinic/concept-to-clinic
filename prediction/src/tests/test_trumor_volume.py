@@ -67,3 +67,4 @@ def test_calculate_volume_on_overlapped_connected_components():
     assert len(volumes_calculated) == 3
     assert volumes_calculated == [75., 75., 22.5]
     shutil.rmtree(os.path.dirname(path))
+    
