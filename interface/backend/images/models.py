@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils._os import safe_join
 import dicom
 import glob
 
@@ -22,7 +23,7 @@ class ImageSeries(models.Model):
         :return: (ImageSeries, bool)
         """
         file_ = glob.glob1(uri, '*.dcm')[0]
-        plan = dicom.read_file(uri + "/" + file_)
+        plan = dicom.read_file(safe_join(uri, file_))
         patient_id = plan.PatientID
         series_instance_uid = plan.SeriesInstanceUID
         return ImageSeries.objects.get_or_create(
