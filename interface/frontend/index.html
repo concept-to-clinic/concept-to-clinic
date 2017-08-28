@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 
 {% block head %}
-  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-        integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous"/>
+  <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../static/css/font-awesome.min.css"/>
 {% endblock %}
-
+</head>
+<body>
 {% block content %}
   {% verbatim %}
   <div class="container">
@@ -77,12 +76,9 @@
   </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.2/vue.js"
-          integrity="sha256-CaFg/YykXqx3pn0h0oVBc6u5glps1fubTHqe/gHi/pA=" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/1.3.4/vue-resource.js"
-          integrity="sha256-8+8bZrGzTM4WqoYDOiYM8g19vF3l/R2zIs27nia7u5M=" crossorigin="anonymous"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" async
-          integrity="sha256-gL1ibrbVcRIHKlCO5OXOPC/lZz/gpdApgQAzskqqXp8=" crossorigin="anonymous"></script>
+  <script src="../static/js/vue.js"></script>
+  <script src="../static/js/vue-resource.js"</script>
+  <script src="../static/js/tether.min.js"</script>
   <script>
     Vue.use(VueResource);
 

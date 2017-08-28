@@ -14,7 +14,7 @@ Welcome to Concept to Clinic's documentation!
 
 .. toctree::
    :maxdepth: 4
-   :caption: Developer documentation
+   :caption: Developer Documentation
 
    contribute
    project-structure
@@ -27,6 +27,15 @@ Welcome to Concept to Clinic's documentation!
    challenge-rules-link
    code-of-conduct-link
    contributor-license-agreement-link
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code Documentation
+
+   apidoc_interface/modules
+   apidoc_prediction/modules
+
 
 
 Indices and tables
