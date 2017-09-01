@@ -8,7 +8,8 @@
 </head>
 
 {% block tabs %}
-  {% include "shared/tabs.html" with active_tab='open_image' %}
+{{ block.super }}
+{% include "shared/tabs.html" with active_tab='open_image' %}
 {% endblock %}
 
 {% block content %}

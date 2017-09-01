@@ -2,7 +2,8 @@
 {% load static %}
 
 {% block tabs %}
-  {% include "shared/tabs.html" with active_tab='detect_and_select' %}
+{{ block.super }}
+{% include "shared/tabs.html" with active_tab='detect_and_select' %}
 {% endblock %}
 
 {% block content %}
