@@ -120,13 +120,13 @@ At first, we used the the fpr network which already gave some improvements. Subs
 ```
 
 To aggregate nodule predictions, the two most successful strategies were described as follows:
-```
+
 **P_patient_cancer = 1 - ∏ P_nodule_benign**
 The idea behind this aggregation is that the probability of having cancer is equal to 1 if all the nodules are benign. If one nodule is classified as malignant, P_patient_cancer will be one. The problem with this approach is that it doesn’t behave well when the malignancy prediction network is convinced one of the nodules is malignant. Once the network is correctly predicting that the network one of the nodules is malignant, the learning stops.
 
 **Log Mean Exponent**
 The idea behind this aggregation strategy is that the cancer probability is determined by the most malignant/the least benign nodule. The LME aggregation works as the soft version of a max operator. As the name suggest, it exponential blows up the predictions of the individual nodule predictions, hence focussing on the largest(s) probability(s). Compared to a simple max function, this function also allows backpropagating through the networks of the other predictions.
-```
+
 
 For the final predictions, the results of the last 30 stage models were ensembled.
 
