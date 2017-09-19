@@ -14,7 +14,7 @@ services:
   interface:
     build:
       context: .
-      dockerfile: ./compose/interface/Dockerfile-dev
+      dockerfile: ./compose/interface/Dockerfile-dev-api
     command: /start-dev.sh
     depends_on:
       - postgres
@@ -29,8 +29,29 @@ services:
       - ./interface/:/app
       - ./tests/assets/test_image_data/small:/images
       - ./.git/logs/HEAD:/HEAD
+      - ./prediction/src/algorithms/classify/assets/:/classify_models
     ports:
       - "8000:8000"
+
+  vue:
+    build:
+      context: .
+      dockerfile: ./compose/interface/Dockerfile-dev-vue
+    command: npm run dev
+    depends_on:
+      - interface
+    volumes:
+      - ./interface/frontend/src:/app/src
+      - ./interface/frontend/build:/app/build
+      - ./interface/frontend/config:/app/config
+      - ./interface/frontend/dist:/app/dist
+      - ./interface/frontend/static:/app/static
+      - ./interface/frontend/test:/app/test
+      - ./.git/logs/HEAD:/HEAD
+    links:
+      - interface
+    ports:
+      - "8080:8080"
 
   prediction:
     build:
@@ -43,28 +64,6 @@ services:
     volumes:
       - ./prediction/:/app
       - ./tests/assets/test_image_data/small:/images
+      - ./prediction/src/algorithms/classify/assets/:/classify_models
     ports:
       - "8001:8001"
-
-  # compile_docs:
-  #     restart: always
-  #     build:
-  #       context: .
-  #       dockerfile: ./compose/prediction/Dockerfile-dev
-  #     volumes:
-  #       - ./:/app
-  #     command: make -C /app/docs html
-
-  # documentation:
-  #   build:
-  #     context: .
-  #     dockerfile: ./compose/prediction/Dockerfile-dev
-  #   depends_on:
-  #     - compile_docs
-  #   working_dir: /app/docs/_build/html
-  #   volumes:
-  #     - ./docs/_build/html:/app/docs/_build/html
-  #     - ./:/app
-  #   command: python -m http.server
-  #   ports:
-  #     - "8002:8000"

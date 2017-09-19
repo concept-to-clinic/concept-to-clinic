@@ -14,6 +14,9 @@ import environ
 BASE_DIR = environ.Path(__file__) - 3
 APPS_DIR = BASE_DIR.path('backend')
 
+# Datasource from where the images will be loaded initially
+DATASOURCE_DIR = '/images'
+
 env = environ.Env()
 env.read_env(str(BASE_DIR.path('.env')))
 
@@ -64,7 +67,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            str(BASE_DIR.path('frontend')),
+            str(BASE_DIR.path('frontend/templates')),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -73,7 +76,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'backend.static.context_processors.settings_context',
             ],
         },
     },
@@ -110,7 +112,7 @@ STATIC_ROOT = str(BASE_DIR('staticfiles'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = (
-    str(BASE_DIR.path('assets')),
+    str(BASE_DIR.path('frontend/static')),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders

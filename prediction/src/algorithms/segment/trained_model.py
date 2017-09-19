@@ -7,7 +7,11 @@
     descriptive statistics.
 """
 
-from src.preprocess.load_dicom import load_dicom
+from src.preprocess.load_ct import load_ct, MetaData
+
+import numpy as np
+import os
+import scipy.ndimage
 
 
 def predict(dicom_path, centroids):
@@ -34,28 +38,49 @@ def predict(dicom_path, centroids):
             {'binary_mask_path': str,
              'volumes': list[float]}
     """
-    load_dicom(dicom_path)
-    segment_path = 'path/to/segmentation'
+    load_ct(dicom_path)
+    segment_path = os.path.join(os.path.dirname(__file__),
+                                'assets', 'test_mask.npy')
     volumes = calculate_volume(segment_path, centroids)
     return_value = {
         'binary_mask_path': segment_path,
         'volumes': volumes
     }
+
     return return_value
 
 
-def calculate_volume(segment_path, centroids):
-    """ Calculates tumor volume from pixel masks
+def calculate_volume(segment_path, centroids, ct_path=None):
+    """ Calculates tumor volume in cubic mm if a dicom_path has been provided.
 
+    Given the path to the serialized mask and a list of centroids
+        (1) For each centroid, calculate the volume of the tumor.
+        (2) DICOM has voxels' sizes in mm therefore the volume should be in real
+        measurements (not pixels).
     Args:
-        segment_path (str): A path to the serialized binary mask for
-            each centroid
+        segment_path (str): a path to a mask file
         centroids (list[dict]): A list of centroids of the form::
             {'x': int,
              'y': int,
              'z': int}
+        dicom_path (str): contains the path to the folder containing the dcm-files of a series.
+            If None then volume will be returned in voxels.
 
     Returns:
-        list[float]: List of volumes per centroid
+        list[float]: a list of volumes in cubic mm (if a dicom_path has been provided)
+            of a connected component for each centroid.
     """
-    return [0.5 for centroid in centroids]
+
+    mask = np.load(segment_path)
+    mask, _ = scipy.ndimage.label(mask)
+    labels = [mask[centroid['x'], centroid['y'], centroid['z']] for centroid in centroids]
+    volumes = np.bincount(mask.flatten())
+    volumes = volumes[labels].tolist()
+
+    if ct_path:
+        meta = load_ct(ct_path, voxel=False)
+        meta = MetaData(meta)
+        spacing = np.prod(meta.spacing)
+        volumes = [volume * spacing for volume in volumes]
+
+    return volumes
