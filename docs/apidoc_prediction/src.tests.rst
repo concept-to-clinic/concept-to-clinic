@@ -4,6 +4,14 @@ src.tests package
 Submodules
 ----------
 
+src.tests.test_calculate_volume module
+--------------------------------------
+
+.. automodule:: src.tests.test_calculate_volume
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 src.tests.test_classify_trained_model_predict module
 ----------------------------------------------------
 
@@ -24,6 +32,14 @@ src.tests.test_endpoints module
 -------------------------------
 
 .. automodule:: src.tests.test_endpoints
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+src.tests.test_load_ct module
+-----------------------------
+
+.. automodule:: src.tests.test_load_ct
     :members:
     :undoc-members:
     :show-inheritance:
