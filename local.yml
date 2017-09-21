@@ -64,6 +64,40 @@ services:
     volumes:
       - ./prediction/:/app
       - ./tests/assets/test_image_data/small:/images
+      - ./tests/assets/test_image_data/full:/images_full
       - ./prediction/src/algorithms/classify/assets/:/classify_models
+      - ./prediction/src/algorithms/identify/assets/:/identify_models
+      - ./data/:/app/data
     ports:
       - "8001:8001"
+
+  compile_docs:
+      restart: always
+      depends_on:
+        - postgres
+      environment:
+        - POSTGRES_USER=concepttoclinic
+        - USE_DOCKER=yes
+        - SECRET_KEY=notverysecret
+        - DEBUG=True
+        - DJANGO_SETTINGS_MODULE=config.settings.local
+      build:
+        context: .
+        dockerfile: ./compose/documentation/Dockerfile-dev
+      volumes:
+        - ./:/app
+      command: bash -c "source compose/interface/entrypoint.sh && make -C /app/docs html"
+
+  documentation:
+    build:
+      context: .
+      dockerfile: ./compose/documentation/Dockerfile-dev
+    depends_on:
+      - compile_docs
+    working_dir: /app/docs/_build/html
+    volumes:
+      - ./docs/_build/html:/app/docs/_build/html
+      - ./:/app
+    command: python -m http.server
+    ports:
+      - "8002:8000"
