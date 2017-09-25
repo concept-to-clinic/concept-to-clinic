@@ -7,6 +7,7 @@ import cv2
 import dicom
 import numpy
 import scipy
+from dicom.errors import InvalidDicomError
 from skimage.filters import roberts
 from skimage.measure import label, regionprops
 from skimage.morphology import disk, binary_erosion, binary_closing
@@ -84,9 +85,11 @@ def load_patient(src_dir):
     slices = []
     for s in os.listdir(src_dir):
         try:
-            slices.append(dicom.read_file(os.path.join(src_dir, s)))
-        except Exception as e:
-            logging.error("{} no valid DICOM: {}".format(s, e))
+            dicom_slice = dicom.read_file(os.path.join(src_dir, s))
+        except InvalidDicomError:
+            logging.error("{} is no valid DICOM".format(s))
+        else:
+            slices.append(dicom_slice)
     slices.sort(key=lambda x: int(x.InstanceNumber))
     try:
         slice_thickness = numpy.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
