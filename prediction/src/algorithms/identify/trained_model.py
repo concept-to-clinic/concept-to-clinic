@@ -7,21 +7,11 @@
     for where the centroids of nodules are in the DICOM image.
 """
 
-import glob
-import logging
-import math
-import os
+import SimpleITK as sitk
 
-import cv2
-import dicom
-import numpy
-from src.preprocess.errors import EmptyDicomSeriesException
+from src.algorithms.identify.src import gtr123_model
 
-from . import helpers
 from . import prediction
-
-TARGET_VOXEL_MM = 1.00
-EXTRACTED_IMAGE_DIR = "data/extracted/"
 
 
 def predict(dicom_path):
@@ -48,76 +38,32 @@ def predict(dicom_path):
              'z': int,
              'p_nodule': float}
     """
-    if dicom_path[-1] != '/':
-        dicom_path += '/'
-    dicom_files = glob.glob(dicom_path + "*.dcm")
-    if not dicom_files:
-        raise EmptyDicomSeriesException
-    patient_id = dicom.read_file(dicom_files[0]).SeriesInstanceUID
-    z, x, y = preprocess(dicom_path, patient_id)
-    results_df = run_prediction(patient_id)
-    results_df['coord_x'] *= x
-    results_df['coord_y'] *= y
-    results_df['coord_z'] *= z
-    rescaled_results_df = results_df[['coord_x', 'coord_y', 'coord_z', 'nodule_chance']].copy()
-    rescaled_results_df.columns = ['x', 'y', 'z', 'p_nodule']
-    rescaled_results_df[['x', 'y', 'z']] = rescaled_results_df[['x', 'y', 'z']].astype(int)
-    rescaled_dict = rescaled_results_df.to_dict(orient='record')
-    return rescaled_dict
 
+    reader = sitk.ImageSeriesReader()
+    filenames = reader.GetGDCMSeriesFileNames(dicom_path)
+    if not filenames:
+        raise ValueError("The path doesn't contain neither .mhd nor .dcm files")
 
-def preprocess(dicom_path, patient_id):
-    """Convert the data such that it can be used by the De Wit algorithm. Write the converted data to EXTRACTED_IMAGE_DIR.
-
-    Args:
-        dicom_path: a path to a DICOM directory
-        patient_id: SeriesInstanceUID of the patient
-
-    Returns:
-        shape of the patient images (z, x, y)
-    """
-
-    target_dir = EXTRACTED_IMAGE_DIR + patient_id + "/"
-    if not os.path.exists(target_dir):
-        os.mkdir(target_dir)
-
-    slices = helpers.load_patient(dicom_path)
-    logging.info("Number of Slices", len(slices), "\tSliceThickness", slices[0].SliceThickness, "\tPixelSpacing",
-                 slices[0].PixelSpacing)
-    logging.info("Orientation: ", slices[0].ImageOrientationPatient)
-
-    cos_value = (slices[0].ImageOrientationPatient[0])
-    cos_degree = round(math.degrees(math.acos(cos_value)), 2)
-
-    pixels = helpers.get_pixels_hu(slices)
-    image = pixels
-    logging.info("Image Shape: " + str(image.shape))
-
-    invert_order = slices[1].ImagePositionPatient[2] > slices[0].ImagePositionPatient[2]
-    logging.info("Invert order: ", invert_order, " - ", slices[1].ImagePositionPatient[2], ",",
-                 slices[0].ImagePositionPatient[2])
-
-    pixel_spacing = slices[0].PixelSpacing
-    pixel_spacing.append(slices[0].SliceThickness)
-    image = helpers.rescale_patient_images(image, pixel_spacing, TARGET_VOXEL_MM)
-    if not invert_order:
-        image = numpy.flipud(image)
-
-    for i in range(image.shape[0]):
-        patient_dir = target_dir
-        if not os.path.exists(patient_dir):
-            os.mkdir(patient_dir)
-        img_path = patient_dir + "img_" + str(i).rjust(4, '0') + "_i.png"
-        org_img = image[i]
-        # if there exists slope,rotation image with corresponding degree
-        if cos_degree > 0.0:
-            org_img = helpers.cv_flip(org_img, org_img.shape[1], org_img.shape[0], cos_degree)
-        img, mask = helpers.get_segmented_lungs(org_img.copy())
-        org_img = helpers.normalize_hu(org_img)
-        cv2.imwrite(img_path, org_img * 255)
-        cv2.imwrite(img_path.replace("_i.png", "_m.png"), mask * 255)
-
-    return image.shape
+    reader.SetFileNames(reader.GetGDCMSeriesFileNames(dicom_path))
+    image = reader.Execute()
+    result = gtr123_model.predict(image)
+    return result
+    # if dicom_path[-1] != '/':
+    #     dicom_path += '/'
+    # dicom_files = glob.glob(dicom_path + "*.dcm")
+    # if not dicom_files:
+    #     raise EmptyDicomSeriesException
+    # patient_id = dicom.read_file(dicom_files[0]).SeriesInstanceUID
+    # z, x, y = save_lung_segments(dicom_path, patient_id)
+    # results_df = run_prediction(patient_id)
+    # results_df['coord_x'] *= x
+    # results_df['coord_y'] *= y
+    # results_df['coord_z'] *= z
+    # rescaled_results_df = results_df[['coord_x', 'coord_y', 'coord_z', 'nodule_chance']].copy()
+    # rescaled_results_df.columns = ['x', 'y', 'z', 'p_nodule']
+    # rescaled_results_df[['x', 'y', 'z']] = rescaled_results_df[['x', 'y', 'z']].astype(int)
+    # rescaled_dict = rescaled_results_df.to_dict(orient='record')
+    # return rescaled_dict
 
 
 def run_prediction(patient_id, magnification=1, ext_name="luna_posnegndsb_v", version=1, holdout=1):

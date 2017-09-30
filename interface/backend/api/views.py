@@ -1,6 +1,7 @@
 import json
+import mimetypes
 import os
-
+import dicom
 from backend.api import serializers
 from backend.cases.models import (
     Case,
@@ -11,13 +12,9 @@ from backend.cases.models import (
 from backend.images.models import ImageSeries
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import get_object_or_404
-from rest_framework import renderers
-from rest_framework import viewsets
 from rest_framework.decorators import api_view
-from rest_framework.decorators import renderer_classes
-from rest_framework.renderers import JSONRenderer
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -42,6 +39,24 @@ class ImageSeriesViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ImageSeriesSerializer
 
 
+class ImageMetadataApiView(APIView):
+
+    def get(self, request):
+        '''
+        Get metadata of a DICOM image including the image in base64 format.
+        Example: .../api/images/metadata?dicom_location=FULL_PATH_TO_IMAGE
+        ---
+        parameters:
+            - name: dicom_location
+            description: full location of the image
+            required: true
+            type: string
+        '''
+        path = request.GET['dicom_location']
+        ds = dicom.read_file(path, force=True)
+        return Response(serializers.DicomMetadataSerializer(ds).data)
+
+
 class ImageAvailableApiView(APIView):
     """
     View list of images from dataset directory
@@ -51,44 +66,77 @@ class ImageAvailableApiView(APIView):
         super(ImageAvailableApiView, self).__init__(**kwargs)
         self.fss = FileSystemStorage(settings.DATASOURCE_DIR)
 
-    def walk(self, location, dir_name='root'):
+    @staticmethod
+    def filename_to_dict(name, location):
+        d = {
+            'type': 'file',
+            'mime_guess': mimetypes.guess_type(name)[0],
+            'name': name,
+            'path': os.path.join(location, name)
+        }
+        return d
+
+    def walk(self, location, dir_name='/'):
         """
         Recursively walkthrough directories and files
         """
-        list_dirs = self.fss.listdir(location)
-        tree = {
-            'name': dir_name,
-            'children': [],
-        }
-        tree['children'] = sorted(list_dirs[1])
-        for dirname in sorted(list_dirs[0]):
-            tree['children'].append(self.walk(os.path.join(location, dirname), dirname))
+        folders, files = self.fss.listdir(location)
+        tree = {'name': dir_name, 'children': []}
+        tree['files'] = [self.filename_to_dict(filename, location) for filename in sorted(files)]
+        tree['type'] = 'folder'
+        tree['children'] = [self.walk(os.path.join(location, dir), dir) for dir in folders]
         return tree
 
     def get(self, request):
         """
-        Return a sorted(by name) list of files and folders
-        in dataset
+        Return a sorted (by name) list of files and folders in dataset
 
         Format::
 
-            {'directories': [
+          {
+            "directories": {
+              "name": "/",
+              "children": [
                 {
-                    'name': directory_name1,
-                    'children': [
-                        file_name1,
-                        file_name2,
+                  "name": "LIDC-IDRI-0002",
+                  "children": [
+                    {
+                      "name": "1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329",
+                      "children": [
                         {
-                            'name': 'nested_dir_1',
-                            'children': [
-                                'file_name_1',
-                                'file_name_2',
-                                ....
-                            ]
+                          "name": "1.3.6.1.4.1.14519.5.2.1.6279.6001.619372068417051974713149104919",
+                          "children": [],
+                          "files": [
+                            {
+                              "type": "file",
+                              "mime_guess": "application/dicom",
+                              "name": "-80.750000.dcm",
+                              "path": "/images/LIDC-IDRI-0002/1.3.[...snip...]3149104919/-80.750000.dcm"
+                            },
+                            {
+                              "type": "file",
+                              "mime_guess": "application/dicom",
+                              "name": "-82.000000.dcm",
+                              "path": "/images/LIDC-IDRI-0002/1.3.[...snip...]3149104919/-82.000000.dcm"
+                            },
+                            ...
+                          ],
+                          "type": "folder"
                         }
-                        ... ]
-                }, ... ]
+                      ],
+                      "files": [],
+                      "type": "folder"
+                    }
+                  ],
+                  "files": [],
+                  "type": "folder"
+                }
+              ],
+              "files": [],
+              "type": "folder"
             }
+          }
+
         """
         tree = self.walk(settings.DATASOURCE_DIR)
         return Response({'directories': tree})
@@ -104,18 +152,27 @@ def candidate_dismiss(request, candidate_id):
     return Response({'response': "Candidate {} was dismissed".format(candidate_id)})
 
 
-class JsonHtmlRenderer(renderers.BaseRenderer):
-    media_type = 'text/html'
-    format = 'html'
-
-    def render(self, data, media_type=None, renderer_context=None):
-        return "<pre>{}</pre>".format(json.dumps(data, indent=4, sort_keys=True, cls=DjangoJSONEncoder))
-
-
 @api_view(['GET'])
-# Render .json and .html requests
-@renderer_classes((JSONRenderer, JsonHtmlRenderer))
 def case_report(request, case_id, format=None):
     case = get_object_or_404(Case, pk=case_id)
-
     return Response(CaseSerializer(case).data)
+
+
+@api_view(['POST'])
+def nodule_update(request, nodule_id):
+    try:
+        lung_orientation = json.loads(request.body)['lung_orientation']
+    except Exception as e:
+        return Response({'response': "An error occurred: {}".format(e)}, 500)
+
+    if lung_orientation is None:
+        lung_orientation = 'NONE'
+
+    orientation_choices = [orientation.name for orientation in Nodule.LungOrientation]
+
+    if lung_orientation not in orientation_choices:
+        return Response({'response': "ValueError: lung_orientation must be one of {}".format(orientation_choices)}, 500)
+
+    Nodule.objects.filter(pk=nodule_id).update(lung_orientation=Nodule.LungOrientation[lung_orientation].value)
+    return Response(
+        {'response': "Lung orientation of nodule {} has been changed to '{}'".format(nodule_id, lung_orientation)})
