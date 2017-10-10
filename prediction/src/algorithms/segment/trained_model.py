@@ -8,10 +8,11 @@
 """
 
 from src.preprocess.load_ct import load_ct, MetaData
-
+from src.algorithms.segment.src import levelset_segment
+from src import utils
 import numpy as np
-import os
 import scipy.ndimage
+import SimpleITK as sitk
 
 
 def predict(dicom_path, centroids):
@@ -36,15 +37,30 @@ def predict(dicom_path, centroids):
         dict: Dictionary containing path to serialized binary masks and
             volumes per centroid with form::
             {'binary_mask_path': str,
-             'volumes': list[float]}
+             'volumes': list[float]
+             'diameters': list[float]}
     """
-    load_ct(dicom_path)
-    segment_path = os.path.join(os.path.dirname(__file__),
-                                'assets', 'test_mask.npy')
-    volumes = calculate_volume(segment_path, centroids)
+
+    reader = sitk.ImageSeriesReader()
+    reader.SetFileNames(reader.GetGDCMSeriesFileNames(dicom_path))
+    image = reader.Execute()
+
+    binary_mask = np.zeros_like(sitk.GetArrayFromImage(image), dtype=bool)
+
+    volumes = []
+    diameters = []
+    for nodule in centroids:
+        mask, diameter, volume = levelset_segment.segment_nodule(image, nodule)
+        volumes.append(volume)
+        diameters.append(diameter)
+        binary_mask |= sitk.GetArrayFromImage(mask).astype(bool)
+
+    segment_path = utils.get_temporary_file(".npy")
+    np.save(segment_path, binary_mask)
     return_value = {
-        'binary_mask_path': segment_path,
-        'volumes': volumes
+        'binary_mask_path': segment_path.name,
+        'volumes': volumes,
+        'diameters': diameters
     }
 
     return return_value
