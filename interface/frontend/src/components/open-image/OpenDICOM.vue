@@ -6,8 +6,8 @@
 
 <script>
   import { EventBus } from '../../main.js'
-  var cornerstone = require('cornerstone-core')
-  var Q = require('q')
+  const cornerstone = require('cornerstone-core')
+  const Q = require('q')
 
   export default {
     name: 'open-dicom',
@@ -69,7 +69,7 @@
           })
       },
       applyMeta (info) {
-        var meta = info['metadata']
+        const meta = info['metadata']
         this.dicom.base64data = info['image']
         this.dicom.slope = meta['Rescale Slope']
         this.dicom.rows = meta['Rows']
@@ -80,30 +80,28 @@
         this.dicom.rowPixelSpacing = meta['Pixel Spacing']['1']
       },
       str2pixelData (str) {
-        var buf = new ArrayBuffer(str.length * 2) // 2 bytes for each char
-        var bufView = new Int16Array(buf)
-        var index = 0
-        for (var i = 0, strLen = str.length; i < strLen; i += 2) {
-          var lower = str.charCodeAt(i)
-          var upper = str.charCodeAt(i + 1)
-          bufView[index] = lower + (upper << 8)
+        let buf = new ArrayBuffer(str.length * 2) // 2 bytes for each char
+        let bufView = new Int16Array(buf)
+        let index = 0
+        for (let i = 0, strLen = str.length; i < strLen; i += 2) {
+          bufView[index] = str.charCodeAt(i) + (str.charCodeAt(i + 1) << 8)
           index++
         }
         return bufView
       },
       getPixelData () {
-        var pixelDataAsString = window.atob(this.dicom.base64data)
-        var pixelData = this.str2pixelData(pixelDataAsString)
+        let pixelDataAsString = window.atob(this.dicom.base64data)
+        let pixelData = this.str2pixelData(pixelDataAsString)
         return pixelData
       },
       resolveDICOM (imageId) {
-        var deferred = Q.defer()
+        const deferred = Q.defer()
         deferred.resolve(this.dicom)
         return deferred.promise
       },
       loadImage (resolve) {
         cornerstone.registerImageLoader(this.csName, resolve)
-        var element = this.$refs.DICOM
+        const element = this.$refs.DICOM
         console.log(element)
 
         cornerstone.enable(element)
