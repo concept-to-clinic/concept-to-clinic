@@ -1,15 +1,11 @@
 <template>
-  <div class="container">
-    <div class="col-xs-6">
-      <div class="DICOM-container">
-        <div class="DICOM" ref="DICOM"></div>
-      </div>
-      <p>{{ dicom.imageId}}</p>>
-    </div>
+  <div class="DICOM-container">
+    <div class="DICOM" ref="DICOM"></div>
   </div>
 </template>
 
 <script>
+  import { EventBus } from '../../main.js'
   var cornerstone = require('cornerstone-core')
   var Q = require('q')
 
@@ -23,7 +19,7 @@
           maxPixelValue: 255,
           slope: 1.0,
           intercept: 0,
-          windowCenter: 90,
+          windowCenter: 110,
           windowWidth: 100,
           render: cornerstone.renderGrayscaleImage,
           getPixelData: this.getPixelData,
@@ -35,28 +31,36 @@
           base64data: '',
           columnPixelSpacing: 1,
           rowPixelSpacing: 1,
-          sizeInBytes: 512 * 512 * 2
+          sizeInBytes: 0
         },
-        dicomUrl: 'LIDC://LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/1.3.6.1.4.1.14519.5.2.1.6279.6001.179049373636438705059720603192/-95.000000.dcm',
         info: null,
-        csName: 'LIDC'
+        csName: 'LIDC',
+        prefixUrl: '/api/images/metadata?dicom_location=/'
+      }
+    },
+    computed: {
+      'dicom.sizeInBytes': function () {
+        this.dicom.sizeInBytes = this.dicom.rows * this.dicom.columns * 2
       }
     },
     watch: {
       info: function (val) {
         if (val != null) {
           this.applyMeta(val)
-          console.log(this.dicom)
           this.loadImage(this.resolveDICOM)
         }
       }
     },
     mounted: function () {
-      this.fetchData(this.dicomUrl)
+      EventBus.$on('dicom-selection', (path) => {
+        this.dicom.imageId = this.csName + ':/' + path
+        console.log(this.dicom.imageId)
+        this.fetchData(this.dicom.imageId)
+      })
     },
     methods: {
       fetchData (id) {
-        this.$axios.get('/api/images/metadata?dicom_location=/images/' + id.slice(this.csName.length + 3))
+        this.$axios.get(this.prefixUrl + id.slice(this.csName.length + 3))
           .then((response) => {
             this.info = response.data
           })
@@ -65,7 +69,6 @@
           })
       },
       applyMeta (info) {
-        this.dicom.imageId = this.dicomUrl
         var meta = info['metadata']
         this.dicom.base64data = info['image']
         this.dicom.slope = meta['Rescale Slope']
@@ -99,7 +102,7 @@
         return deferred.promise
       },
       loadImage (resolve) {
-        cornerstone.registerImageLoader('LIDC', resolve)
+        cornerstone.registerImageLoader(this.csName, resolve)
         var element = this.$refs.DICOM
         console.log(element)
 

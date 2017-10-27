@@ -35,8 +35,9 @@
           <div class="card-header">
             Import image series
           </div>
-          <div class="card-block">
-            <tree-view class="item" :model="directories"></tree-view>
+          <div class="card-block left">
+            <tree-view class="item left" :model="directories"></tree-view>
+            <open-dicom class="right"></open-dicom>
           </div>
         </div>
       </div>
@@ -77,10 +78,12 @@
 
 <script>
   import TreeView from './TreeView'
+  import OpenDicom from './OpenDICOM'
 
   export default {
     components: {
-      TreeView
+      TreeView,
+      OpenDicom
     },
     data () {
       return {
@@ -125,4 +128,10 @@
 </script>
 
 <style lang="scss" scoped>
+  .left {
+    float: left;
+  }
+  .right {
+    float: right;
+  }
 </style>
