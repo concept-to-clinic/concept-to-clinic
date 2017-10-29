@@ -16,8 +16,8 @@
         default: {
           type: 'DICOM',
           prefixCS: ':/',
-          prefixUrl: '',
-          path: ''
+          prefixUrl: null,
+          path: null
         }
       }
     },
@@ -27,53 +27,44 @@
       }
     },
     computed: {
-      info () {
-        return this.$axios.get(this.view.prefixUrl + this.view.path)
-          .then((response) => {
-            return response.data
-          })
-          .catch(() => {
-            // TODO: handle error
-          })
+      async info () {
+        const response = await this.$axios.get(this.view.prefixUrl + this.view.path)
+        return response.data
       },
-      dicom () {
-        return this.info.then((info) => {
-          this.base64data = info.image
-          return {
-            imageId: this.view.type + this.view.prefixCS + this.view.path,
-            slope: info.metadata['Rescale Slope'],
-            rows: info.metadata['Rows'],
-            columns: info.metadata['Columns'],
-            height: info.metadata['Rows'],
-            width: info.metadata['Columns'],
-            columnPixelSpacing: info.metadata['Pixel Spacing']['0'],
-            rowPixelSpacing: info.metadata['Pixel Spacing']['1'],
-            sizeInBytes: info.metadata['Rows'] * info.metadata['Columns'] * 2,
-            minPixelValue: 0,
-            maxPixelValue: 255,
-            intercept: 0,
-            windowCenter: 110,
-            windowWidth: 100,
-            render: cornerstone.renderGrayscaleImage,
-            getPixelData: this.getPixelData,
-            color: false
-          }
-        })
+      async dicom () {
+        const info = await this.info
+        this.base64data = info.image
+        return {
+          imageId: this.view.type + this.view.prefixCS + this.view.path,
+          slope: info.metadata['Rescale Slope'],
+          rows: info.metadata['Rows'],
+          columns: info.metadata['Columns'],
+          height: info.metadata['Rows'],
+          width: info.metadata['Columns'],
+          columnPixelSpacing: info.metadata['Pixel Spacing']['0'],
+          rowPixelSpacing: info.metadata['Pixel Spacing']['1'],
+          sizeInBytes: info.metadata['Rows'] * info.metadata['Columns'] * 2,
+          minPixelValue: 0,
+          maxPixelValue: 255,
+          intercept: 0,
+          windowCenter: 110,
+          windowWidth: 100,
+          render: cornerstone.renderGrayscaleImage,
+          getPixelData: this.getPixelData,
+          color: false
+        }
       },
-      display () {
-        return this.dicom.then((dicom) => {
-          let resolve = function () {
-            return new Promise(function (resolve) {
-              resolve(dicom)
-            })
-          }
-          const element = this.$refs.DICOM
-          this.initCS(element)
-          cornerstone.registerImageLoader(this.view.type, resolve)
-          cornerstone.loadImage(dicom.imageId).then(function (image) {
-            cornerstone.displayImage(element, image)
-          })
+      async display () {
+        const element = this.$refs.DICOM
+        const dicom = await this.dicom
+        this.initCS(element)
+
+        cornerstone.registerImageLoader(this.view.type, () => {
+          return new Promise((resolve) => { resolve(dicom) })
         })
+        const image = await cornerstone.loadImage(dicom.imageId)
+        cornerstone.displayImage(element, image)
+        return image
       }
     },
     methods: {
