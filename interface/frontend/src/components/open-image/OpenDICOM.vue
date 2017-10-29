@@ -1,83 +1,89 @@
 <template>
   <div class="DICOM-container">
+    <div class="DICOM-description">{{ display }}</div>
     <div class="DICOM" ref="DICOM"></div>
   </div>
 </template>
 
 <script>
-  import { EventBus } from '../../main.js'
   const cornerstone = require('cornerstone-core')
   const Q = require('q')
 
   export default {
     name: 'open-dicom',
-    data () {
-      return {
-        dicom: {
-          imageId: '',
-          minPixelValue: 0,
-          maxPixelValue: 255,
-          slope: 1.0,
-          intercept: 0,
-          windowCenter: 110,
-          windowWidth: 100,
-          render: cornerstone.renderGrayscaleImage,
-          getPixelData: this.getPixelData,
-          rows: 512,
-          columns: 512,
-          height: 512,
-          width: 512,
-          color: false,
-          base64data: '',
-          columnPixelSpacing: 1,
-          rowPixelSpacing: 1,
-          sizeInBytes: 0
-        },
-        info: null,
-        csName: 'LIDC',
-        prefixUrl: '/api/images/metadata?dicom_location=/'
-      }
-    },
-    computed: {
-      'dicom.sizeInBytes': function () {
-        this.dicom.sizeInBytes = this.dicom.rows * this.dicom.columns * 2
-      }
-    },
-    watch: {
-      info: function (val) {
-        if (val != null) {
-          this.applyMeta(val)
-          this.loadImage(this.resolveDICOM)
+    props: {
+      view: {
+        type: Object,
+        default: {
+          type: 'DICOM',
+          prefixCS: ':/',
+          prefixUrl: '',
+          path: ''
         }
       }
     },
-    mounted: function () {
-      EventBus.$on('dicom-selection', (path) => {
-        this.dicom.imageId = this.csName + ':/' + path
-        console.log(this.dicom.imageId)
-        this.fetchData(this.dicom.imageId)
-      })
+    data () {
+      return {
+        base64data: null
+      }
     },
-    methods: {
-      fetchData (id) {
-        this.$axios.get(this.prefixUrl + id.slice(this.csName.length + 3))
+    computed: {
+      info () {
+        return this.$axios.get(this.view.prefixUrl + this.view.path)
           .then((response) => {
-            this.info = response.data
+            return response.data
           })
           .catch(() => {
             // TODO: handle error
           })
       },
-      applyMeta (info) {
-        const meta = info['metadata']
-        this.dicom.base64data = info['image']
-        this.dicom.slope = meta['Rescale Slope']
-        this.dicom.rows = meta['Rows']
-        this.dicom.columns = meta['Columns']
-        this.dicom.height = meta['Rows']
-        this.dicom.width = meta['Columns']
-        this.dicom.columnPixelSpacing = meta['Pixel Spacing']['0']
-        this.dicom.rowPixelSpacing = meta['Pixel Spacing']['1']
+      dicom () {
+        return this.info.then((info) => {
+          this.base64data = info.image
+          return {
+            imageId: this.view.type + this.view.prefixCS + this.view.path,
+            slope: info.metadata['Rescale Slope'],
+            rows: info.metadata['Rows'],
+            columns: info.metadata['Columns'],
+            height: info.metadata['Rows'],
+            width: info.metadata['Columns'],
+            columnPixelSpacing: info.metadata['Pixel Spacing']['0'],
+            rowPixelSpacing: info.metadata['Pixel Spacing']['1'],
+            sizeInBytes: info.metadata['Rows'] * info.metadata['Columns'] * 2,
+            minPixelValue: 0,
+            maxPixelValue: 255,
+            intercept: 0,
+            windowCenter: 110,
+            windowWidth: 100,
+            render: cornerstone.renderGrayscaleImage,
+            getPixelData: this.getPixelData,
+            color: false
+          }
+        })
+      },
+      display () {
+        return this.dicom.then((dicom) => {
+          let resolve = function () {
+            const deferred = Q.defer()
+            deferred.resolve(dicom)
+            return deferred.promise
+          }
+          const element = this.$refs.DICOM
+          this.initCS(element)
+          cornerstone.registerImageLoader(this.view.type, resolve)
+          cornerstone.loadImage(dicom.imageId).then(function (image) {
+            cornerstone.displayImage(element, image)
+          })
+        })
+      }
+    },
+    methods: {
+      initCS (element) {
+        try {
+          cornerstone.getEnabledElement(element)
+        } catch (e) {
+          cornerstone.enable(element)
+        }
       },
       str2pixelData (str) {
         let buf = new ArrayBuffer(str.length * 2) // 2 bytes for each char
@@ -90,25 +96,9 @@
         return bufView
       },
       getPixelData () {
-        let pixelDataAsString = window.atob(this.dicom.base64data)
+        let pixelDataAsString = window.atob(this.base64data)
         let pixelData = this.str2pixelData(pixelDataAsString)
         return pixelData
-      },
-      resolveDICOM (imageId) {
-        const deferred = Q.defer()
-        deferred.resolve(this.dicom)
-        return deferred.promise
-      },
-      loadImage (resolve) {
-        cornerstone.registerImageLoader(this.csName, resolve)
-        const element = this.$refs.DICOM
-        console.log(element)
-
-        cornerstone.enable(element)
-        console.log(resolve())
-        cornerstone.loadImage(this.dicom.imageId).then(function (image) {
-          cornerstone.displayImage(element, image)
-        })
       }
     }
   }

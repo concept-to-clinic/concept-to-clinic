@@ -37,7 +37,7 @@
           </div>
           <div class="card-block left">
             <tree-view class="item left" :model="directories"></tree-view>
-            <open-dicom class="right"></open-dicom>
+            <open-dicom class="right" :view="preview"></open-dicom>
           </div>
         </div>
       </div>
@@ -77,6 +77,7 @@
 </template>
 
 <script>
+  import { EventBus } from '../../main.js'
   import TreeView from './TreeView'
   import OpenDicom from './OpenDICOM'
 
@@ -92,6 +93,12 @@
           name: 'root',
           children: []
         },
+        preview: {
+          type: 'DICOM',
+          prefixCS: ':/',
+          prefixUrl: '/api/images/metadata?dicom_location=/',
+          path: ''
+        },
         selected: null,
         showImport: false
       }
@@ -99,6 +106,12 @@
     created () {
       this.fetchData()
       this.fetchAvailableImages()
+    },
+    mounted: function () {
+      EventBus.$on('dicom-selection', (path) => {
+        this.preview.path = path
+        console.log(this.preview)
+      })
     },
     methods: {
       fetchData () {
