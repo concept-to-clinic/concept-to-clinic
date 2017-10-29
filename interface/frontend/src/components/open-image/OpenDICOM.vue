@@ -7,7 +7,6 @@
 
 <script>
   const cornerstone = require('cornerstone-core')
-  const Q = require('q')
 
   export default {
     name: 'open-dicom',
@@ -64,9 +63,9 @@
       display () {
         return this.dicom.then((dicom) => {
           let resolve = function () {
-            const deferred = Q.defer()
-            deferred.resolve(dicom)
-            return deferred.promise
+            return new Promise(function (resolve) {
+              resolve(dicom)
+            })
           }
           const element = this.$refs.DICOM
           this.initCS(element)
