@@ -20,12 +20,12 @@
 
     <h4>Lung nodules</h4>
 
-    {% for nodule in study.nodules %}
-    <li>{{ nodule.diameter }} </li>
-    <li>{{ nodule.appearanceFeature }} </li>
-    <li>{{ nodule.densityFeature }} </li>
-    <li>{{ nodule.imageNo }} </li>
-    {% endfor %}
+    <ul v-for="nodule in study.nodules">
+      <li>{{ nodule.diameter }} </li>
+      <li>{{ nodule.appearanceFeature }} </li>
+      <li>{{ nodule.densityFeature }} </li>
+      <li>{{ nodule.imageNo }} </li>
+    </ul>
 
     <li v-for='nodule in study.nodules'>
       <a href='#' @click='selectSeries(series)'>{{ series.series_instance_uid }}</a>
