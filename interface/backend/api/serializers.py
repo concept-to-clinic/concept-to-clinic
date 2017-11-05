@@ -1,6 +1,7 @@
 import dicom
 import base64
 from PIL import Image
+import numpy as np
 from io import BytesIO
 from backend.cases.models import (
     Case,
@@ -73,7 +74,7 @@ class NoduleSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class DicomMetadataSerializer(serializers.BaseSerializer):
-    '''
+    """
     Serialize a Dicom image metadata including a base64 version of the
     image in following format:
     {
@@ -89,12 +90,12 @@ class DicomMetadataSerializer(serializers.BaseSerializer):
         },
         image: "data:image/jpg;base64,/9j/4AAQSkZJRgABAQ.....fnkw3n"
     }
-    '''
+    """
 
     def to_representation(self, obj):
-        '''
+        """
         Put dicom metadata into a separate dictionary
-        '''
+        """
         dicom_dict = {}
         repr(obj)   # Bit hacky! But does the work to populate the elements
         for dicom_value in obj.values():
@@ -110,16 +111,28 @@ class DicomMetadataSerializer(serializers.BaseSerializer):
             'image': self.dicom_to_base64(obj),
         }
 
-    def dicom_to_base64(self, ds):
-        '''
+    def dicom_to_base64_depricated(self, ds):
+        """
         Returning base64 encoded string for a dicom image
-        '''
+        """
         buff_output = BytesIO()
         img = Image.fromarray((ds.pixel_array)).convert('RGB')
         img.save(buff_output, format='jpeg')
         preamble = 'data:image/jpg;base64,'
         base64_encoded = base64.b64encode(buff_output.getvalue()).decode()
         return preamble + base64_encoded
+
+    def pixel_data2str(self, buf):
+        _min, _max = buf.min(), buf.max()
+        buf = 254 * (np.array(buf, dtype=np.float) - _min) / (_max - _min) + 1
+        return buf.astype(np.uint16)
+
+    def dicom_to_base64(self, ds):
+        """
+        Returning base64 encoded string for a dicom image
+        """
+        rescaled = self.pixel_data2str(ds.pixel_array)
+        return base64.b64encode(rescaled.tobytes())
 
     def _sanitise_unicode(self, s):
         return s.replace(u"\u0000", "").strip()

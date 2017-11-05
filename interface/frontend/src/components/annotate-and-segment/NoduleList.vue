@@ -5,7 +5,10 @@
       <div v-if="nodules.length">
         <div id="accordion" role="tablist" aria-multiselectable="true">
           <template v-for="(nodule, index) in nodules">
-            <nodule :nodule="nodule" :index="index"></nodule>
+            <nodule :nodule="nodule" :index="index">
+              <annotate v-if="annotate" :nodule="nodule" :index="index" slot="add-on-editor">
+              </annotate>
+            </nodule>
           </template>
         </div>
       </div>
@@ -20,9 +23,11 @@
 
 <script>
 import Nodule from './Nodule'
+import Annotate from './Annotate'
 
 export default {
-  components: { Nodule },
+  props: ['annotate'],
+  components: { Nodule, Annotate },
   data () {
     return {
       nodules: []
@@ -33,14 +38,13 @@ export default {
   },
   methods: {
     fetchNodules () {
-      this.$axios.get('/api/nodules.json').then(
-        (response) => {
+      this.$axios.get('/api/nodules.json')
+        .then((response) => {
           this.nodules = response.data
-        },
-        () => {
-          // error callback
-        }
-      )
+        })
+        .catch(() => {
+          // TODO: error callback
+        })
     }
   }
 }

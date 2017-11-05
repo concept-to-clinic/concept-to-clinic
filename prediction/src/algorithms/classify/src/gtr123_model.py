@@ -1,10 +1,16 @@
-import torch
-import numpy as np
-from torch.autograd import Variable
-from torch import nn
-import SimpleITK as sitk
+from os import path
 
-from src.preprocess.gtr123_preprocess import lum_trans, resample
+import numpy as np
+import torch
+
+from torch import nn
+from torch.autograd import Variable
+
+from config import Config
+from src.preprocess.crop_patches import patches_from_ct
+from src.preprocess.load_ct import load_ct
+from src.preprocess.preprocess_ct import PreprocessCT
+
 
 """"
 Classification model from team gtr123
@@ -50,16 +56,16 @@ class PostRes(nn.Module):
             self.shortcut = None
 
     def forward(self, x):
-
         residual = x
+
         if self.shortcut is not None:
             residual = self.shortcut(x)
+
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
         out = self.conv2(out)
         out = self.bn2(out)
-
         out += residual
         out = self.relu(out)
         return out
@@ -81,7 +87,7 @@ class Net(nn.Module):
             nn.BatchNorm3d(24),
             nn.ReLU(inplace=True))
 
-        # 3 poolings, each pooling downsamples the feature map by a factor 2.
+        # 3 poolings, each pooling down-samples the feature map by a factor 2.
         # 3 groups of blocks. The first block of each group has one pooling.
         num_blocks_forw = [2, 2, 3, 3]
         num_blocks_back = [3, 3]
@@ -208,11 +214,12 @@ class CaseNet(nn.Module):
 
         noduleFeat, nodulePred = self.NoduleNet(xlist, coordlist)
         nodulePred = nodulePred.contiguous().view(corrdsize[0], corrdsize[1], -1)
-
         featshape = noduleFeat.size()  # nk x 128 x 24 x 24 x24
+
         centerFeat = self.pool(noduleFeat[:, :, featshape[2] // 2 - 1:featshape[2] // 2 + 1,
                                featshape[3] // 2 - 1:featshape[3] // 2 + 1,
                                featshape[4] // 2 - 1:featshape[4] // 2 + 1])
+
         centerFeat = centerFeat[:, :, 0, 0, 0]
         out = self.dropout(centerFeat)
         out = self.Relu(self.fc1(out))
@@ -223,55 +230,11 @@ class CaseNet(nn.Module):
         return nodulePred, casePred, out
 
 
-class SimpleCrop(object):
-    """ """
-
-    def __init__(self):
-        self.crop_size = config['crop_size']
-        self.scaleLim = config['scaleLim']
-        self.radiusLim = config['radiusLim']
-        self.stride = config['stride']
-        self.filling_value = config['filling_value']
-
-    def __call__(self, imgs, target):
-        crop_size = np.array(self.crop_size).astype('int')
-
-        start = (target[:3] - crop_size / 2).astype('int')
-        pad = [[0, 0]]
-
-        for i in range(3):
-            if start[i] < 0:
-                leftpad = -start[i]
-                start[i] = 0
-            else:
-                leftpad = 0
-            if start[i] + crop_size[i] > imgs.shape[i + 1]:
-                rightpad = start[i] + crop_size[i] - imgs.shape[i + 1]
-            else:
-                rightpad = 0
-
-            pad.append([leftpad, rightpad])
-
-        imgs = np.pad(imgs, pad, 'constant', constant_values=self.filling_value)
-        crop = imgs[:, start[0]:start[0] + crop_size[0], start[1]:start[1] + crop_size[1],
-                    start[2]:start[2] + crop_size[2]]
-
-        normstart = np.array(start).astype('float32') / np.array(imgs.shape[1:]) - 0.5
-        normsize = np.array(crop_size).astype('float32') / np.array(imgs.shape[1:])
-        xx, yy, zz = np.meshgrid(np.linspace(normstart[0], normstart[0] + normsize[0], self.crop_size[0] / self.stride),
-                                 np.linspace(normstart[1], normstart[1] + normsize[1], self.crop_size[1] / self.stride),
-                                 np.linspace(normstart[2], normstart[2] + normsize[2], self.crop_size[2] / self.stride),
-                                 indexing='ij')
-        coord = np.concatenate([xx[np.newaxis, ...], yy[np.newaxis, ...], zz[np.newaxis, :]], 0).astype('float32')
-
-        return crop, coord
-
-
-def predict(image_itk, nodule_list, model_path="src/algorithms/classify/assets/gtr123_model.ckpt"):
+def predict(ct_path, nodule_list, model_path=None):
     """
 
     Args:
-      image_itk: ITK dicom image
+      ct_path (str): path to a MetaImage or DICOM data.
       nodule_list: List of nodules
       model_path: Path to the torch model (Default value = "src/algorithms/classify/assets/gtr123_model.ckpt")
 
@@ -279,32 +242,33 @@ def predict(image_itk, nodule_list, model_path="src/algorithms/classify/assets/g
       List of nodules, and probabilities
 
     """
+    if not model_path:
+        CLASSIFY_DIR = path.join(Config.ALGOS_DIR, 'classify')
+        model_path = path.join(CLASSIFY_DIR, 'assets', 'gtr123_model.ckpt')
+
     if not nodule_list:
         return []
-    casenet = CaseNet()
 
+    casenet = CaseNet()
     casenet.load_state_dict(torch.load(model_path))
     casenet.eval()
 
     if torch.cuda.is_available():
         casenet = torch.nn.DataParallel(casenet).cuda()
     # else:
-        # casenet = torch.nn.parallel.DistributedDataParallel(casenet)
+    #     casenet = torch.nn.parallel.DistributedDataParallel(casenet)
 
-    image = sitk.GetArrayFromImage(image_itk)
-    spacing = np.array(image_itk.GetSpacing())[::-1]
-    image = lum_trans(image)
-    image = resample(image, spacing, np.array([1, 1, 1]), order=1)[0]
+    preprocess = PreprocessCT(clip_lower=-1200., clip_upper=600., spacing=1., order=1,
+                              min_max_normalize=True, scale=255, dtype='uint8')
 
-    crop = SimpleCrop()
+    ct_array, meta = preprocess(*load_ct(ct_path))
+    patches = patches_from_ct(ct_array, meta, config['crop_size'], nodule_list,
+                              stride=config['stride'], pad_value=config['filling_value'])
 
     results = []
-    for nodule in nodule_list:
-        print(nodule)
-        nod_location = np.array([np.float32(nodule[s]) for s in ["z", "y", "x"]])
-        nod_location *= spacing
-        cropped_image, coords = crop(image[np.newaxis], nod_location)
-        cropped_image = Variable(torch.from_numpy(cropped_image[np.newaxis]).float())
+
+    for nodule, (cropped_image, coords) in zip(nodule_list, patches):
+        cropped_image = Variable(torch.from_numpy(cropped_image[np.newaxis, np.newaxis]).float())
         cropped_image.volatile = True
         coords = Variable(torch.from_numpy(coords[np.newaxis]).float())
         coords.volatile = True

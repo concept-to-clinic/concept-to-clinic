@@ -1,6 +1,7 @@
 import json
 import mimetypes
 import os
+
 import dicom
 from backend.api import serializers
 from backend.cases.models import (
@@ -13,10 +14,12 @@ from backend.images.models import ImageSeries
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
 from rest_framework import viewsets
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from ..cases import enums
 
 
 class CaseViewSet(viewsets.ModelViewSet):
@@ -40,7 +43,6 @@ class ImageSeriesViewSet(viewsets.ModelViewSet):
 
 
 class ImageMetadataApiView(APIView):
-
     def get(self, request):
         '''
         Get metadata of a DICOM image including the image in base64 format.
@@ -76,15 +78,28 @@ class ImageAvailableApiView(APIView):
         }
         return d
 
+    @staticmethod
+    def is_hidden(location):
+        """
+        Check whether a file or a directory is hidden.
+        """
+        return os.path.basename(location).startswith('.')
+
     def walk(self, location, dir_name='/'):
         """
         Recursively walkthrough directories and files
         """
         folders, files = self.fss.listdir(location)
-        tree = {'name': dir_name, 'children': []}
-        tree['files'] = [self.filename_to_dict(filename, location) for filename in sorted(files)]
-        tree['type'] = 'folder'
-        tree['children'] = [self.walk(os.path.join(location, dir), dir) for dir in folders]
+        tree = {
+            'name': dir_name,
+            'type': 'folder',
+            'files': [self.filename_to_dict(filename, location)
+                      for filename in sorted(files)
+                      if not self.is_hidden(filename)],
+            'children': [self.walk(os.path.join(location, dir), dir)
+                         for dir in sorted(folders)
+                         if not self.is_hidden(dir)]
+        }
         return tree
 
     def get(self, request):
@@ -168,11 +183,11 @@ def nodule_update(request, nodule_id):
     if lung_orientation is None:
         lung_orientation = 'NONE'
 
-    orientation_choices = [orientation.name for orientation in Nodule.LungOrientation]
+    orientation_choices = [orientation.name for orientation in enums.LungOrientation]
 
     if lung_orientation not in orientation_choices:
         return Response({'response': "ValueError: lung_orientation must be one of {}".format(orientation_choices)}, 500)
 
-    Nodule.objects.filter(pk=nodule_id).update(lung_orientation=Nodule.LungOrientation[lung_orientation].value)
+    Nodule.objects.filter(pk=nodule_id).update(lung_orientation=enums.LungOrientation[lung_orientation].value)
     return Response(
         {'response': "Lung orientation of nodule {} has been changed to '{}'".format(nodule_id, lung_orientation)})

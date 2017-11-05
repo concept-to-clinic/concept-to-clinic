@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="margin-top: 5em;">
+  <div class="container">
 
     <div class="row">
       <div class="col-md-12">
@@ -35,8 +35,9 @@
           <div class="card-header">
             Import image series
           </div>
-          <div class="card-block">
-            <tree-view class="item" :model="directories"></tree-view>
+          <div class="card-block left">
+            <tree-view class="item left" :model="directories"></tree-view>
+            <open-dicom class="right" :view="preview"></open-dicom>
           </div>
         </div>
       </div>
@@ -76,11 +77,14 @@
 </template>
 
 <script>
+  import { EventBus } from '../../main.js'
   import TreeView from './TreeView'
+  import OpenDicom from './OpenDICOM'
 
   export default {
     components: {
-      TreeView
+      TreeView,
+      OpenDicom
     },
     data () {
       return {
@@ -88,6 +92,12 @@
         directories: {
           name: 'root',
           children: []
+        },
+        preview: {
+          type: 'DICOM',
+          prefixCS: ':/',
+          prefixUrl: '/api/images/metadata?dicom_location=/',
+          path: ''
         },
         selected: null,
         showImport: false
@@ -97,14 +107,20 @@
       this.fetchData()
       this.fetchAvailableImages()
     },
+    mounted: function () {
+      EventBus.$on('dicom-selection', (path) => {
+        this.preview.path = path
+        console.log(this.preview)
+      })
+    },
     methods: {
       fetchData () {
-        this.$http.get('/api/images/').then(
-          (response) => {
+        this.$http.get('/api/images/')
+          .then((response) => {
             this.availableSeries = response.body
-          },
-          () => {
-            // error callback
+          })
+          .catch(() => {
+            // TODO: handle error
           })
       },
       selectSeries (series) {
@@ -112,18 +128,23 @@
         this.selected = series
       },
       fetchAvailableImages () {
-        this.$http.get('/api/images/available').then(
-          (response) => {
+        this.$http.get('/api/images/available')
+          .then((response) => {
             this.directories = response.body.directories
-          },
-          () => {
-            // error callback
-          }
-        )
+          })
+          .catch(() => {
+            // TODO: handle error
+          })
       }
     }
   }
 </script>
 
-<style>
+<style lang="scss" scoped>
+  .left {
+    float: left;
+  }
+  .right {
+    float: right;
+  }
 </style>

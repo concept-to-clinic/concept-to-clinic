@@ -6,9 +6,9 @@
 """
 from flask import Blueprint, jsonify, request
 
-from .algorithms import classify
-from .algorithms import identify
-from .algorithms import segment
+from .algorithms.classify import trained_model as classify_trained_model
+from .algorithms.identify import trained_model as identify_trained_model
+from .algorithms.segment import trained_model as segment_trained_model
 
 
 blueprint = Blueprint('blueprint', __name__)
@@ -16,9 +16,9 @@ blueprint = Blueprint('blueprint', __name__)
 
 # The predict methods for each of the possible ML algorithms
 PREDICTORS = {
-    'classify': classify.trained_model.predict,
-    'identify': identify.trained_model.predict,
-    'segment': segment.trained_model.predict
+    'classify': classify_trained_model.predict,
+    'identify': identify_trained_model.predict,
+    'segment': segment_trained_model.predict
 }
 
 
@@ -59,7 +59,7 @@ def predict(algorithm):
     """
 
     # dictionary to hold the response
-    response = dict()
+    response = {}
 
     # string to contain error message
     error = ""
@@ -70,24 +70,16 @@ def predict(algorithm):
 
     # describe API on GET
     elif request.method == 'GET':
-        response.update({
-            'description': PREDICTORS[algorithm].__doc__,
-        })
+        response.update({'description': PREDICTORS[algorithm].__doc__})
 
     # make predictions on POST
     elif request.method == 'POST':
-
         payload = request.json
 
         try:
             predict_method = PREDICTORS[algorithm]
-
             prediction = predict_method(**payload)
-
-            response.update({
-                'prediction': prediction,
-            })
-
+            response.update({'prediction': prediction})
         except Exception as e:
             # pass errors from prediction function along with function chosen
             error = "Error using algorithm '{}': {} ({})."
@@ -95,14 +87,9 @@ def predict(algorithm):
 
     # set the status code for the response
     if error:
-        response.update({
-            'error': error,
-            'status': 500,
-        })
+        response.update({'error': error, 'status': 500})
     else:
-        response.update({
-            'status': 200,
-        })
+        response.update({'status': 200})
 
     resp = jsonify(**response)
     resp.status_code = response['status']

@@ -1,9 +1,11 @@
 <template>
-  <nodule-list></nodule-list>
+  <div class="offset-top">
+    <nodule-list annotate="true"></nodule-list>
+  </div>
 </template>
 
 <script>
-import NoduleList from '../components/NoduleList'
+import NoduleList from '../components/annotate-and-segment/NoduleList'
 
 export default {
   components: {
@@ -11,3 +13,16 @@ export default {
   }
 }
 </script>
+
+<style media="screen">
+.offset-top {
+  margin-top: 5em;
+}
+
+@media screen and (max-width: 990px) {
+  .offset-top {
+    margin-top: 10em;
+  }
+}
+
+</style>
