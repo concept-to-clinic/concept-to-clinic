@@ -41,7 +41,6 @@ def predict(dicom_path):
              'z': int,
              'p_nodule': float}
     """
-    
     reader = sitk.ImageSeriesReader()
     filenames = reader.GetGDCMSeriesFileNames(dicom_path)
 
