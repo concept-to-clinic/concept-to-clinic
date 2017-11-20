@@ -1,85 +1,53 @@
 <template>
   <div class="container">
-
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card">
-          <div class="card-header">
-            Open imagery
-          </div>
-          <div class="card-block">
-            <template v-if="availableSeries.length">
-              <ul>
-                <li v-for="series in availableSeries" :key="series.series_instance_uid">
-                  <a href="#" @click="selectSeries(series)">{{ series.series_instance_uid }}</a>
-                  <span v-if="series == selected">&larr;</span>
-                </li>
-              </ul>
-            </template>
-            <template v-else>
-              <p class="card-text">No images imported.</p>
-            </template>
-            <button class="btn btn-warning float-right"
-                    @click="showImport = !showImport"
-            >
-              Import
-            </button>
-          </div>
-        </div>
+    <div class="offset-top">
+      <div class="pt-3">
+        <h1> Open Image </h1>
       </div>
-    </div><!-- /row1 -->
+      <hr/>
+      <div v-if="currentCase">
+        <h4>
+          You have started this case:
+        </h4>
 
-    <div class="row" v-show="showImport">
-      <div class="col-md-12">
-        <div class="card card-outline-warning">
-          <div class="card-header">
-            Import image series
-          </div>
-          <div class="card-block left">
-            <tree-view class="item left" :model="directories"></tree-view>
-            <open-dicom class="right" :view="preview"></open-dicom>
-          </div>
-        </div>
+        <table class="table table-bordered table-condensed">
+          <tr>
+            <td>Patient ID</td>
+            <td>{{ currentCase.series.patient_id }}</td>
+          </tr>
+          <tr>
+            <td>Series Instance ID</td>
+            <td>
+              <small>{{ currentCase.series.series_instance_uid }}</small>
+            </td>
+          </tr>
+        </table>
+
+        <p>
+          You can select another DICOM image and start a new case
+        </p>
       </div>
+
+      <div class="pt-3">
+        <h2> Start a New Case </h2>
+      </div>
+
+      <hr/>
+
+
+      <tree-view class="item pull-left" :model="directories" :open-by-default="true"></tree-view>
+      <open-dicom class="pull-right" v-show="preview.paths" :view="preview"></open-dicom>
     </div>
 
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card" v-if="selected">
-          <div class="card-header">
-            Selected image series
-          </div>
-          <div class="card-block">
-            <h3 class="card-title">{{ selected.patient_id }}</h3>
+  </div>
 
-            <table class="table table-bordered table-condensed">
-              <thead>
-              <tr>
-                <th>key</th>
-                <th>value</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="(item, key, index) in selected">
-                <td>{{ key }}</td>
-                <td><small>{{ item }}</small></td>
-              </tr>
-              </tbody>
-            </table>
-
-            <a href="#" class="btn btn-primary float-right">Start case</a>
-          </div>
-        </div>
-      </div>
-    </div><!-- /row2 -->
-
-  </div><!-- /container -->
 </template>
 
 <script>
-  import { EventBus } from '../../main.js'
+  import {EventBus} from '../../main.js'
   import TreeView from './TreeView'
   import OpenDicom from './OpenDICOM'
+  import dirname from 'path-dirname'
 
   export default {
     components: {
@@ -88,7 +56,6 @@
     },
     data () {
       return {
-        availableSeries: [],
         directories: {
           name: 'root',
           children: []
@@ -97,10 +64,9 @@
           type: 'DICOM',
           prefixCS: '://',
           prefixUrl: '/api/images/metadata?dicom_location=/',
-          paths: []
+          paths: null
         },
-        selected: null,
-        showImport: false
+        currentCase: null
       }
     },
     created () {
@@ -108,43 +74,42 @@
       this.fetchAvailableImages()
     },
     mounted: function () {
-      EventBus.$on('dicom-selection', (path) => {
-        this.preview.paths = path
-        console.log(this.preview)
+      EventBus.$on('dicom-selection', (paths) => {
+        this.preview.paths = paths
+      })
+
+      EventBus.$on('start-new-case', (filePath) => {
+        if (!this.currentCase || confirm('This will drop the current case and start a new one. Are you sure?')) {
+          // drop the current case and start a new one
+          this.$axios.post('api/cases/start_new_case', {
+            uri: dirname(filePath)
+          }).then((response) => {
+            if (response.status === 200) {
+              this.currentCase = response.data
+            }
+          })
+        }
       })
     },
     methods: {
       fetchData () {
-        this.$http.get('/api/images/')
-          .then((response) => {
-            this.availableSeries = response.body
-          })
-          .catch(() => {
-            // TODO: handle error
-          })
-      },
-      selectSeries (series) {
-        console.log(series.uri)
-        this.selected = series
+        this.$http.get('/api/cases/')
+            .then((response) => {
+              this.currentCase = response.body[0]
+            })
+            .catch(() => {
+              // TODO: handle error
+            })
       },
       fetchAvailableImages () {
         this.$http.get('/api/images/available')
-          .then((response) => {
-            this.directories = response.body.directories
-          })
-          .catch(() => {
-            // TODO: handle error
-          })
+            .then((response) => {
+              this.directories = response.body.directories
+            })
+            .catch(() => {
+              // TODO: handle error
+            })
       }
     }
   }
 </script>
-
-<style lang="scss" scoped>
-  .left {
-    float: left;
-  }
-  .right {
-    float: right;
-  }
-</style>

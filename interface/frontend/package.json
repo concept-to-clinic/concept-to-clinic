@@ -70,6 +70,7 @@
     "opn": "^5.1.0",
     "optimize-css-assets-webpack-plugin": "^2.0.0",
     "ora": "^1.2.0",
+    "path-dirname": "^1.0.2",
     "phantomjs-prebuilt": "^2.1.14",
     "rimraf": "^2.6.0",
     "sass-loader": "^6.0.6",
