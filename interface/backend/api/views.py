@@ -10,6 +10,11 @@ from backend.cases.models import (
     Nodule,
     CaseSerializer
 )
+from backend.cases.factories import (
+    CaseFactory,
+    CandidateFactory,
+    NoduleFactory
+)
 from backend.images.models import ImageSeries
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
@@ -195,3 +200,30 @@ def nodule_update(request, nodule_id):
     Nodule.objects.filter(pk=nodule_id).update(lung_orientation=enums.LungOrientation[lung_orientation].value)
     return Response(
         {'response': "Lung orientation of nodule {} has been changed to '{}'".format(nodule_id, lung_orientation)})
+
+
+@api_view(['POST'])
+def start_new_case(request):
+    try:
+        uri = json.loads(request.body)['uri']
+    except Exception as e:
+        return Response({'response': "An error occurred: {}".format(e)}, 500)
+
+    # drop existing case(s) with candidates and nodules
+    Case.objects.all().delete()
+
+    # drop imported images
+    ImageSeries.objects.all().delete()
+
+    # import a new image and start a new case
+    new_image, created = ImageSeries.get_or_create(uri)
+    new_case = CaseFactory(series=new_image)
+
+    # TODO: start prediction here
+    # dummy data
+    candidates = CandidateFactory.create_batch(5, case=new_case)
+    NoduleFactory(candidate=candidates[0], case=new_case)
+    NoduleFactory(candidate=candidates[1], case=new_case)
+    NoduleFactory(candidate=candidates[4], case=new_case)
+
+    return Response(CaseSerializer(new_case).data)

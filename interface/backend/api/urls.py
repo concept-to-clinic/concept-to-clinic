@@ -8,7 +8,8 @@ from backend.api.views import (
     candidate_mark,
     candidate_dismiss,
     case_report,
-    nodule_update
+    nodule_update,
+    start_new_case
 )
 from django.conf.urls import (
     include,
@@ -31,6 +32,8 @@ urlpatterns = [
     url(r'^candidates/(?P<candidate_id>\d+)/dismiss$', candidate_dismiss, name='candidate-dismiss'),
     url(r'^candidates/(?P<candidate_id>\d+)/mark$', candidate_mark, name='candidate-mark'),
     url(r'^nodules/(?P<nodule_id>\d+)/update$', nodule_update, name='nodule-update'),
+    url(r'^cases/start_new_case$', start_new_case, name='start-new-case'),
+
 ]
 
 # Support different suffixes
