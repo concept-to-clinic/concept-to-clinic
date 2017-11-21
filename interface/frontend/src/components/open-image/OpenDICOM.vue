@@ -22,7 +22,8 @@
           type: 'DICOM',
           prefixCS: ':/',
           prefixUrl: null,
-          paths: []
+          paths: [],
+          state: ''
         }
       }
     },
@@ -39,8 +40,9 @@
     watch: {
       'view.paths': function (val) {
         const element = this.$refs.DICOM
-        this.pool = []
-        this.stack.currentImageIdIndex = 0
+        this.pool = Array(this.view.paths.length)
+        this.stack.currentImageIdIndex = this.view.paths.indexOf(this.view.state)
+        if (this.stack.currentImageIdIndex < 0) this.stack.currentImageIdIndex = 0
         this.stack.imageIds = this.view.paths.map((path) => {
           return this.view.type + this.view.prefixCS + path
         }, this)
@@ -50,9 +52,9 @@
     },
     computed: {
       async info () {
-        if (this.pool.length <= this.stack.currentImageIdIndex) {
+        if (typeof this.pool[this.stack.currentImageIdIndex] === 'undefined') {
           const hola = await this.$axios.get(this.view.prefixUrl + this.view.paths[this.stack.currentImageIdIndex])
-          this.pool.push(hola)
+          this.pool[this.stack.currentImageIdIndex] = hola
         }
         return this.pool[this.stack.currentImageIdIndex]
       },
@@ -91,7 +93,7 @@
           cornerstone.registerImageLoader(this.view.type, () => {
             return new Promise((resolve) => { resolve(dicom) })
           })
-          const image = await cornerstone.loadImage(dicom.imageId)
+          const image = await cornerstone.loadAndCacheImage(dicom.imageId)
           cornerstone.displayImage(element, image)
           return image
         }
@@ -107,9 +109,6 @@
           cornerstoneTools.addStackStateManager(element, ['stack'])
           cornerstoneTools.addToolState(element, 'stack', this.stack)
           cornerstoneTools.stackScroll.activate(element, 1)
-          cornerstoneTools.stackScrollWheel.activate(element)
-          cornerstoneTools.scrollIndicator.enable(element)
-          cornerstoneTools.wwwc.activate(element, 1)
         }
       },
       str2pixelData (str) {
