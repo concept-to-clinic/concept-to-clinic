@@ -78,10 +78,8 @@
       },
       select: function (file) {
         EventBus.$emit('dicom-selection',
-          {
-            paths: this.model.files.map((file) => { return file.path }),
-            state: file.path
-          })
+            this.model.files.map((file) => { return file.path })
+        )
       }
     }
   }

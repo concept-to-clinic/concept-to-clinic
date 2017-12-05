@@ -8,70 +8,57 @@
             Open imagery
           </div>
           <div class="card-block">
-            <template v-if="availableSeries.length">
+            <template v-if="selected">
+              <table class="table table-bordered table-condensed">
+                <thead>
+                <tr>
+                  <th>key</th>
+                  <th>value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(item, key, index) in selected">
+                  <td>{{ key }}</td>
+                  <td><small>{{ item }}</small></td>
+                </tr>
+                </tbody>
+              </table>
               <ul>
-                <li v-for="series in availableSeries" :key="series.series_instance_uid">
-                  <a href="#" @click="selectSeries(series)">{{ series.series_instance_uid }}</a>
-                  <span v-if="series == selected">&larr;</span>
+                <li v-for="el in cases" :key="el.created">
+                  <a href="#" @click="selectCase(el)">{{ el.created }}</a>
+                  <span v-if="el == selectedCase">&larr;</span>
                 </li>
               </ul>
+              <button @click="createCase(selected)"
+                      class="btn btn-primary float-left case-btn ml-1">
+                Create new case
+              </button>
+              <a href="#/report-and-export"
+                 class="btn btn-primary float-left case-btn ml-1">
+                Start case
+              </a>
             </template>
             <template v-else>
               <p class="card-text">No images imported.</p>
             </template>
-            <button class="btn btn-warning float-right"
-                    @click="showImport = !showImport"
-            >
-              Import
-            </button>
           </div>
         </div>
       </div>
     </div><!-- /row1 -->
 
-    <div class="row" v-show="showImport">
+    <div class="row">
       <div class="col-md-12">
         <div class="card card-outline-warning">
           <div class="card-header">
             Import image series
           </div>
-          <div class="card-block left">
-            <tree-view class="item left" :model="directories"></tree-view>
-            <open-dicom class="right" :view="preview"></open-dicom>
+          <div class="card-block pull-left">
+            <tree-view class="item pull-left" :model="directories"></tree-view>
+            <open-dicom v-show="preview.paths.length" class="pull-right" :view="preview"></open-dicom>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card" v-if="selected">
-          <div class="card-header">
-            Selected image series
-          </div>
-          <div class="card-block">
-            <h3 class="card-title">{{ selected.patient_id }}</h3>
-
-            <table class="table table-bordered table-condensed">
-              <thead>
-              <tr>
-                <th>key</th>
-                <th>value</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="(item, key, index) in selected">
-                <td>{{ key }}</td>
-                <td><small>{{ item }}</small></td>
-              </tr>
-              </tbody>
-            </table>
-
-            <a href="#" class="btn btn-primary float-right">Start case</a>
-          </div>
-        </div>
-      </div>
-    </div><!-- /row2 -->
 
   </div><!-- /container -->
 </template>
@@ -80,6 +67,7 @@
   import { EventBus } from '../../main.js'
   import TreeView from './TreeView'
   import OpenDicom from './OpenDICOM'
+  import dirname from 'path-dirname'
 
   export default {
     components: {
@@ -97,11 +85,25 @@
           type: 'DICOM',
           prefixCS: '://',
           prefixUrl: '/api/images/metadata?dicom_location=/',
-          paths: [],
-          state: ''
+          paths: []
         },
-        selected: null,
-        showImport: false
+        cases: [],
+        selectedCase: null,
+        selected: null
+      }
+    },
+    watch: {
+      selected: function (val) {
+        this.cases = []
+        this.fetchExistingCases(val)
+      },
+      'preview.paths': async function (val) {
+        if (val.length) {
+          const response = await this.$axios.post('api/images/image_series_registration', {
+            uri: dirname(this.preview.paths[0])
+          })
+          if (response.status === 200) this.selected = response.data
+        }
       }
     },
     created () {
@@ -109,10 +111,9 @@
       this.fetchAvailableImages()
     },
     mounted: function () {
-      EventBus.$on('dicom-selection', (context) => {
-        this.preview.paths = context.paths
-        this.preview.state = context.state
-        console.log(this.preview)
+      EventBus.$on('dicom-selection', (path) => {
+        this.preview.paths = path
+        console.log(this.selected)
       })
     },
     methods: {
@@ -125,9 +126,27 @@
             // TODO: handle error
           })
       },
+      async fetchExistingCases (series) {
+        const response = await this.$axios.post('/api/cases/available', {
+          uri: series.uri
+        })
+        this.cases = response.data
+      },
+      async createCase (series) {
+        console.log(series)
+        await this.$axios.post('/api/cases/create', {
+          uri: series.uri
+        })
+        const response = await this.fetchExistingCases(series)
+        this.cases = response.data
+      },
       selectSeries (series) {
         console.log(series.uri)
         this.selected = series
+      },
+      selectCase (el) {
+        console.log(el.created)
+        this.selectedCase = el
       },
       fetchAvailableImages () {
         this.$http.get('/api/images/available')
@@ -141,12 +160,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-  .left {
-    float: left;
-  }
-  .right {
-    float: right;
-  }
-</style>

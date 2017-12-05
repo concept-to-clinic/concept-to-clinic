@@ -234,3 +234,42 @@ def append_files_to_candidate(candidate):
     if 'files' not in series:
         # using `glob1` as it returns filenames without a directory path
         series['files'] = glob.glob1(series['uri'], '*.dcm')
+
+
+@api_view(['POST'])
+def image_series_registration(request):
+    try:
+        uri = json.loads(request.body)['uri']
+    except Exception as e:
+        return Response({'response': "An error occurred: {}".format(e)}, 500)
+
+    image_series, created = ImageSeries.get_or_create(uri)
+    serialized = serializers.ImageSeriesSerializer(image_series, context={'request': request})
+    return Response(serialized.data)
+
+
+@api_view(['POST'])
+def case_available(request):
+    try:
+        uri = json.loads(request.body)['uri']
+    except Exception as e:
+        return Response({'response': "An error occurred: {}".format(e)}, 500)
+
+    image_series, created = ImageSeries.get_or_create(uri)
+    cases = Case.objects.filter(series=image_series)
+    # if case.count():
+    serialized = serializers.CaseSerializer(cases, context={'request': request}, many=True)
+    return Response(serialized.data)
+
+
+@api_view(['POST'])
+def case_create(request):
+    try:
+        uri = json.loads(request.body)['uri']
+    except Exception as e:
+        return Response({'response': "An error occurred: {}".format(e)}, 500)
+
+    image_series, created = ImageSeries.get_or_create(uri)
+    case = Case.objects.create(series=image_series)
+    serialized = serializers.CaseSerializer(case, context={'request': request})
+    return Response(serialized.data)
