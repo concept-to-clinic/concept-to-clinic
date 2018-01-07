@@ -132,14 +132,14 @@ class PreprocessCT(Params):
                 data_min = voxel_data.min()
             voxel_data = (voxel_data - data_min) / float(data_max - data_min)
 
+        if self.scale is not None:
+            voxel_data *= self.scale
+
         if self.spacing:
             zoom_fctr = meta.spacing / np.asarray(self.spacing)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 voxel_data = scipy.ndimage.interpolation.zoom(voxel_data, zoom_fctr, order=self.order)
-
-        if self.scale is not None:
-            voxel_data *= self.scale
 
         if self.dtype:
             voxel_data = voxel_data.astype(dtype=self.dtype, copy=False)
