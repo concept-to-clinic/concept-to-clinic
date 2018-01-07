@@ -32,7 +32,6 @@ def crop_patch(ct_array, patch_shape=None, centroids=None, stride=None, pad_valu
 
     patch_shape = scipy.ndimage._ni_support._normalize_sequence(patch_shape, len(ct_array.shape))
     patch_shape = np.array(patch_shape)
-    init_shape = np.array(ct_array.shape)
 
     # array with padding size for each dimension
     padding_size = np.ceil(patch_shape / 2.).astype(np.int)
@@ -50,11 +49,9 @@ def crop_patch(ct_array, patch_shape=None, centroids=None, stride=None, pad_valu
                          centroid[2]: centroid[2] + patch_shape[2]]
 
         if stride:
-            init_shape += np.clip(patch_shape // 2 - centroid, 0, np.inf).astype(np.int64)
-            init_shape += np.clip(centroid + patch_shape // 2 - init_shape, 0, np.inf).astype(np.int64)
+            normstart = np.array(centroid) / np.array(ct_array.shape) - 0.5
+            normsize = np.array(patch_shape) / np.array(ct_array.shape)
 
-            normstart = (np.array(centroid) - patch_shape / 2) / init_shape - 0.5
-            normsize = patch_shape / init_shape
             xx, yy, zz = np.meshgrid(np.linspace(normstart[0], normstart[0] + normsize[0], patch_shape[0] // stride),
                                      np.linspace(normstart[1], normstart[1] + normsize[1], patch_shape[1] // stride),
                                      np.linspace(normstart[2], normstart[2] + normsize[2], patch_shape[2] // stride),
