@@ -75,6 +75,7 @@ def main():
     useCustomBool = config_training['use_custom_data']
     if (useCustomBool == True):
         trainingFile = 'custom_train.npy'
+        trainingFullFile = 'custom_train.npy'
         valFile = 'custom_val.npy'
     else:
         trainingFile = 'kaggleluna_full.npy'
@@ -213,12 +214,10 @@ def main():
     
     optimizer = torch.optim.SGD(nod_net.parameters(),
         args.lr,momentum = 0.9,weight_decay = args.weight_decay)
-    print("checkpoint 0")
     trainsplit = np.load(trainingFullFile)
     dataset = DataBowl3Classifier(trainsplit,config2,phase = 'train')
     train_loader_case = DataLoader(dataset,batch_size = args.batch_size2,
         shuffle = True,num_workers = args.workers,pin_memory=True)
-    print("checkpoint 1")
     dataset = DataBowl3Classifier(valsplit,config2,phase = 'val')
     val_loader_case = DataLoader(dataset,batch_size = max([args.batch_size2,1]),
         shuffle = False,num_workers = args.workers,pin_memory=True)
@@ -229,7 +228,6 @@ def main():
    
     optimizer2 = torch.optim.SGD(case_net.parameters(),
         args.lr,momentum = 0.9,weight_decay = args.weight_decay)
-    print("checkpoint 2")
     for epoch in range(start_epoch, end_epoch + 1):
         if epoch ==start_epoch:
             lr = args.lr
@@ -239,29 +237,23 @@ def main():
             train_casenet(epoch,case_net,train_loader_case,optimizer2,args)
             args.lr = lr
             args.debug = debug
-            print("checkpoint 3")
         if epoch<args.lr_stage[-1]:
             train_nodulenet(train_loader_nod, nod_net, loss, epoch, optimizer, args)
             validate_nodulenet(val_loader_nod, nod_net, loss)
-            print("checkpoint 4")
         if epoch>config2['startepoch']:
             train_casenet(epoch,case_net,train_loader_case,optimizer2,args)
             val_casenet(epoch,case_net,val_loader_case,args)
             val_casenet(epoch,case_net,all_loader_case,args)
-        print("checkpoint 5")
-        if epoch % args.save_freq == 0:
-            print("checkpoint 6")            
+        if epoch % args.save_freq == 0:          
             state_dict = case_net.module.state_dict()
             for key in state_dict.keys():
                 state_dict[key] = state_dict[key].cpu()
-            print("checkpoint 7")
             torch.save({
                 'epoch': epoch,
                 'save_dir': save_dir,
                 'state_dict': state_dict,
                 'args': args},
                 os.path.join(save_dir, '%03d.ckpt' % epoch))
-        print("checkpoint 8")
 if __name__ == '__main__':
     main()
 

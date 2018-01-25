@@ -45,12 +45,10 @@ class DataBowl3Classifier(Dataset):
             if os.path.exists(pbb_file):
                 pbb = np.load(pbb_file)
                 pbb = pbb[pbb[:,0]>config['conf_th']]
-#                print ("point 1")
                 pbb = nms(pbb, config['nms_th'])
             #pbb = np.load(os.path.join(bboxpath,idx+'_pbb.npy'))
             #pbb = pbb[pbb[:,0]>config['conf_th']]
             #pbb = nms(pbb, config['nms_th'])
-#            print ("point 2")
             
             #lbb = np.load(os.path.join(bboxpath,idx+'_lbb.npy'))
             lbb = []
