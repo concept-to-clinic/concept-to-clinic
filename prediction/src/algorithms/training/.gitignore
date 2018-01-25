@@ -1,0 +1,9 @@
+*.pyc
+*.ipynb*
+training/.flag*
+prediction*.csv
+bbox_result/*
+prep_result/*
+model/*
+!model/.gitkeep
+training_prep/*
