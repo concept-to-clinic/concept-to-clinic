@@ -35,10 +35,10 @@ Tools
 1. Horos CT scan and annotation software - used to annotate CT scan lesions and export lesion location annotations to csv files.
 2. Use dicom files with folder structure format:
  
-    Patient ID 
-    --->Study ID 
-    ----------->SeriesInstanceID 
-    ------------------>Dicomfiles(1 to N...) where N is the number of dicom images 
+    Patient ID <br />
+    --->Study ID <br />
+    ----------->SeriesInstanceID <br />
+    ------------------>Dicomfiles(1 to N...) where N is the number of dicom images <br />
 
 Process: 
 1. Download your custom data set and prepare in the above format.
