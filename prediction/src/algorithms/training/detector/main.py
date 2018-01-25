@@ -52,7 +52,19 @@ parser.add_argument('--gpu', default='all', type=str, metavar='N',
 parser.add_argument('--n_test', default=8, type=int, metavar='N',
                     help='number of gpu for test')
 
+
+
 def main():
+    useCustomBool = config_training['use_custom_data']
+    if (useCustomBool == True):
+        trainingFile = 'custom_train.npy'
+        valFile = 'custom_val.npy'
+    else:
+        trainingFile = 'kaggleluna_full.npy'
+        valFile = 'valsplit.npy'
+    
+
+
     global args
     args = parser.parse_args()
     
@@ -106,7 +118,7 @@ def main():
         split_comber = SplitComb(sidelen,config['max_stride'],config['stride'],margin,config['pad_value'])
         dataset = data.DataBowl3Detector(
             datadir,
-            'custom_train.npy',
+            trainingFile,
             config,
             phase='test',
             split_comber=split_comber)
@@ -125,7 +137,7 @@ def main():
     
     dataset = data.DataBowl3Detector(
         datadir,
-        'custom_train.npy',
+        trainingFile,
         config,
         phase = 'train')
     train_loader = DataLoader(
@@ -137,7 +149,7 @@ def main():
 
     dataset = data.DataBowl3Detector(
         datadir,
-        'custom_val.npy',
+        valFile,
         config,
         phase = 'val')
     val_loader = DataLoader(

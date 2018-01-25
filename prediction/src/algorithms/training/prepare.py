@@ -434,10 +434,8 @@ def full_prep_custom():
     finished_flag = '.flag_prepcustom'
     val_percent = 0.15
 
-    # TODO: remove it when we done with testing
-    black_list = [
-        '1.3.6.1.4.1.32722.99.99.242398558991671761314971556977115934475',
-        '1.3.6.1.4.1.32722.99.99.49387765244654260927024794452761932939']
+    # TODO: add cases here that fail due to inability to extract lung mask from CT scan.
+    black_list = []
 
     if not os.path.isdir(custom_data):
         return
@@ -519,8 +517,8 @@ def full_prep_custom():
     f= open(finished_flag,"w+")
 
 if __name__=='__main__':
-    #full_prep(step1=True,step2=True)
-    #prepare_luna()
-    #preprocess_luna()
+    full_prep(step1=True,step2=True)
+    prepare_luna()
+    preprocess_luna()
     full_prep_custom()
 

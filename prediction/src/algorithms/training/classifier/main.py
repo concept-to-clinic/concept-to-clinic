@@ -22,6 +22,10 @@ from data_classifier import DataBowl3Classifier
 
 from utils import *
 
+sys.path.append('../')
+from config_training import config as config_training
+
+
 parser = argparse.ArgumentParser(description='PyTorch DataBowl3 Detector')
 parser.add_argument('--model1', '-m1', metavar='MODEL', default='base',
                     help='model')
@@ -67,6 +71,16 @@ parser.add_argument('--freeze_batchnorm', default=0, type=int, metavar='TEST',
                     help='freeze the batchnorm when training')
 
 def main():
+
+    useCustomBool = config_training['use_custom_data']
+    if (useCustomBool == True):
+        trainingFile = 'custom_train.npy'
+        valFile = 'custom_val.npy'
+    else:
+        trainingFile = 'kaggleluna_full.npy'
+        trainingFullFile = 'full.npy'
+        valFile = 'valsplit.npy'
+
     global args
     args = parser.parse_args()
     
@@ -185,8 +199,8 @@ def main():
 
     print(save_dir)
     print(args.save_freq)
-    trainsplit = np.load('custom_train.npy')
-    valsplit = np.load('custom_val.npy')
+    trainsplit = np.load(trainingFile)
+    valsplit = np.load(valFile)
     testsplit = np.load('test.npy')
 
     dataset = DataBowl3Detector(trainsplit,config1,phase = 'train')
@@ -200,7 +214,7 @@ def main():
     optimizer = torch.optim.SGD(nod_net.parameters(),
         args.lr,momentum = 0.9,weight_decay = args.weight_decay)
     print("checkpoint 0")
-    trainsplit = np.load('custom_train.npy')
+    trainsplit = np.load(trainingFullFile)
     dataset = DataBowl3Classifier(trainsplit,config2,phase = 'train')
     train_loader_case = DataLoader(dataset,batch_size = args.batch_size2,
         shuffle = True,num_workers = args.workers,pin_memory=True)
