@@ -2,8 +2,8 @@ import os
 
 from os import path as p
 
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import numpy as np  # linear algebra
+import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import dicom
 import scipy.ndimage
 import matplotlib.pyplot as plt
@@ -35,7 +35,7 @@ def load_scan(dirpath):
         file_paths = (make_s3_path(dirpath, obj.key) for obj in filtered)
         filelist = map(fs.open, file_paths)
     else:
-#        filelist = map(p.abspath, os.listdir(dirpath))
+        #        filelist = map(p.abspath, os.listdir(dirpath))
         filelist = [dirpath + '/' + f for f in os.listdir(dirpath)]
 
     slices = sorted(map(dicom.read_file, filelist), key=keyfunc)
@@ -56,7 +56,7 @@ def load_scan(dirpath):
         slice_thickness = np.abs(
             slices[0].ImagePositionPatient[2] -
             slices[1].ImagePositionPatient[2])
-    except:
+    except BaseException:
         slice_thickness = np.abs(
             slices[0].SliceLocation - slices[1].SliceLocation)
 
@@ -83,7 +83,8 @@ def get_pixels_hu(slices):
 
         image[slice_number] += np.int16(intercept)
 
-    return np.array(image, dtype=np.int16), np.array([slices[0].SliceThickness] + slices[0].PixelSpacing, dtype=np.float32)
+    return np.array(image, dtype=np.int16), np.array(
+        [slices[0].SliceThickness] + slices[0].PixelSpacing, dtype=np.float32)
 
 
 def binarize_per_slice(image, spacing, intensity_th=-600, sigma=1, area_th=30, eccen_th=0.99, bg_patch_size=10):
@@ -91,7 +92,7 @@ def binarize_per_slice(image, spacing, intensity_th=-600, sigma=1, area_th=30, e
 
     # prepare a mask, with all corner values set to nan
     image_size = image.shape[1]
-    grid_axis = np.linspace(-image_size/2+0.5, image_size/2-0.5, image_size)
+    grid_axis = np.linspace(-image_size / 2 + 0.5, image_size / 2 - 0.5, image_size)
     x, y = np.meshgrid(grid_axis, grid_axis)
     d = (x ** 2 + y ** 2) ** 0.5
     nan_mask = (d < image_size / 2).astype(float)
@@ -100,9 +101,11 @@ def binarize_per_slice(image, spacing, intensity_th=-600, sigma=1, area_th=30, e
     for i in range(image.shape[0]):
         # Check if corner pixels are identical, if so the slice  before Gaussian filtering
         if len(np.unique(image[i, 0:bg_patch_size, 0:bg_patch_size])) == 1:
-            current_bw = scipy.ndimage.filters.gaussian_filter(np.multiply(image[i].astype('float32'), nan_mask), sigma, truncate=2.0) < intensity_th
+            current_bw = scipy.ndimage.filters.gaussian_filter(np.multiply(
+                image[i].astype('float32'), nan_mask), sigma, truncate=2.0) < intensity_th
         else:
-            current_bw = scipy.ndimage.filters.gaussian_filter(image[i].astype('float32'), sigma, truncate=2.0) < intensity_th
+            current_bw = scipy.ndimage.filters.gaussian_filter(
+                image[i].astype('float32'), sigma, truncate=2.0) < intensity_th
 
         # select proper components
         label = measure.label(current_bw)
@@ -129,9 +132,9 @@ def all_slice_analysis(bw, spacing, cut_num=0, vol_limit=[0.68, 8.2], area_th=6e
 
     # remove components access to corners
     mid = int(label.shape[2] / 2)
-    bg_label = set([label[0, 0, 0], label[0, 0, -1], label[0, -1, 0], label[0, -1, -1], \
-                    label[-1-cut_num, 0, 0], label[-1-cut_num, 0, -1], label[-1-cut_num, -1, 0], label[-1-cut_num, -1, -1], \
-                    label[0, 0, mid], label[0, -1, mid], label[-1-cut_num, 0, mid], label[-1-cut_num, -1, mid]])
+    bg_label = set([label[0, 0, 0], label[0, 0, -1], label[0, -1, 0], label[0, -1, -1],
+                    label[-1 - cut_num, 0, 0], label[-1 - cut_num, 0, -1], label[-1 - cut_num, -1, 0], label[-1 - cut_num, -1, -1],
+                    label[0, 0, mid], label[0, -1, mid], label[-1 - cut_num, 0, mid], label[-1 - cut_num, -1, mid]])
 
     for l in bg_label:
         label[label == l] = 0
@@ -144,8 +147,8 @@ def all_slice_analysis(bw, spacing, cut_num=0, vol_limit=[0.68, 8.2], area_th=6e
             label[label == prop.label] = 0
 
     # prepare a distance map for further analysis
-    x_axis = np.linspace(-label.shape[1]/2+0.5, label.shape[1]/2-0.5, label.shape[1]) * spacing[1]
-    y_axis = np.linspace(-label.shape[2]/2+0.5, label.shape[2]/2-0.5, label.shape[2]) * spacing[2]
+    x_axis = np.linspace(-label.shape[1] / 2 + 0.5, label.shape[1] / 2 - 0.5, label.shape[1]) * spacing[1]
+    y_axis = np.linspace(-label.shape[2] / 2 + 0.5, label.shape[2] / 2 - 0.5, label.shape[2]) * spacing[2]
     x, y = np.meshgrid(x_axis, y_axis)
     d = (x ** 2 + y ** 2) ** 0.5
     vols = measure.regionprops(label)
@@ -168,7 +171,8 @@ def all_slice_analysis(bw, spacing, cut_num=0, vol_limit=[0.68, 8.2], area_th=6e
 
     # fill back the parts removed earlier
     if cut_num > 0:
-        # bw1 is bw with removed slices, bw2 is a dilated version of bw, part of their intersection is returned as final mask
+        # bw1 is bw with removed slices, bw2 is a dilated version of bw, part of
+        # their intersection is returned as final mask
         bw1 = np.copy(bw)
         bw1[-cut_num:] = bw0[-cut_num:]
         bw2 = np.copy(bw)
@@ -180,7 +184,7 @@ def all_slice_analysis(bw, spacing, cut_num=0, vol_limit=[0.68, 8.2], area_th=6e
         valid_l3 = set()
 
         for l in l_list:
-            indices = np.nonzero(label==l)
+            indices = np.nonzero(label == l)
             l3 = label3[indices[0][0], indices[1][0], indices[2][0]]
 
             if l3 > 0:
@@ -195,7 +199,7 @@ def fill_hole(bw):
     # fill 3d holes
     label = measure.label(~bw)
     # identify corner components
-    bg_label = set([label[0, 0, 0], label[0, 0, -1], label[0, -1, 0], label[0, -1, -1], \
+    bg_label = set([label[0, 0, 0], label[0, 0, -1], label[0, -1, 0], label[0, -1, -1],
                     label[-1, 0, 0], label[-1, 0, -1], label[-1, -1, 0], label[-1, -1, -1]])
     return ~np.in1d(label, list(bg_label)).reshape(label.shape)
 
@@ -211,9 +215,9 @@ def two_lung_only(bw, spacing, max_iter=22, max_ratio=4.8):
             count = 0
             sum = 0
 
-            while sum < np.sum(area)*cover:
-                sum = sum+area[count]
-                count = count+1
+            while sum < np.sum(area) * cover:
+                sum = sum + area[count]
+                count = count + 1
 
             filter = np.zeros(current_slice.shape, dtype=bool)
 
@@ -226,7 +230,7 @@ def two_lung_only(bw, spacing, max_iter=22, max_ratio=4.8):
         label = measure.label(bw)
         properties = measure.regionprops(label)
         properties.sort(key=lambda x: x.area, reverse=True)
-        return label==properties[0].label
+        return label == properties[0].label
 
     def fill_2d_hole(bw):
         for i in range(bw.shape[0]):
@@ -251,7 +255,7 @@ def two_lung_only(bw, spacing, max_iter=22, max_ratio=4.8):
         properties = measure.regionprops(label)
         properties.sort(key=lambda x: x.area, reverse=True)
 
-        if len(properties) > 1 and properties[0].area/properties[1].area < max_ratio:
+        if len(properties) > 1 and properties[0].area / properties[1].area < max_ratio:
             found_flag = True
             bw1 = label == properties[0].label
             bw2 = label == properties[1].label
@@ -287,7 +291,7 @@ def step1_python(case_path):
 
     while flag == 0 and cut_num < bw.shape[0]:
         bw = np.copy(bw0)
-        bw, flag = all_slice_analysis(bw, spacing, cut_num=cut_num, vol_limit=[0.68,7.5])
+        bw, flag = all_slice_analysis(bw, spacing, cut_num=cut_num, vol_limit=[0.68, 7.5])
         cut_num = cut_num + cut_step
 
     bw = fill_hole(bw)
@@ -295,11 +299,11 @@ def step1_python(case_path):
 
     return case_pixels, bw1, bw2, spacing
 
+
 if __name__ == '__main__':
     INPUT_FOLDER = '/work/DataBowl3/stage1/stage1/'
-    patients = os.listdir(INPUT_FOLDER)
-    patients.sort()
-    case_pixels, m1, m2, spacing = step1_python(os.path.join(INPUT_FOLDER,patients[25]))
+    patients = sorted(os.listdir(INPUT_FOLDER))
+    case_pixels, m1, m2, spacing = step1_python(os.path.join(INPUT_FOLDER, patients[25]))
     plt.imshow(m1[60])
     plt.figure()
     plt.imshow(m2[60])

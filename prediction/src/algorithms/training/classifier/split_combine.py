@@ -1,20 +1,22 @@
 import torch
 import numpy as np
+
+
 class SplitComb():
-    def __init__(self,side_len,max_stride,stride,margin):
+    def __init__(self, side_len, max_stride, stride, margin):
         self.side_len = side_len
         self.max_stride = max_stride
         self.stride = stride
         self.margin = margin
-        
-    def split(self, data, side_len = None, max_stride = None, margin = None):
-        if side_len==None:
+
+    def split(self, data, side_len=None, max_stride=None, margin=None):
+        if side_len is None:
             side_len = self.side_len
-        if max_stride == None:
+        if max_stride is None:
             max_stride = self.max_stride
-        if margin == None:
+        if margin is None:
             margin = self.margin
-        
+
         assert(side_len > margin)
         assert(side_len % max_stride == 0)
         assert(margin % max_stride == 0)
@@ -25,14 +27,14 @@ class SplitComb():
         nz = int(np.ceil(float(z) / side_len))
         nh = int(np.ceil(float(h) / side_len))
         nw = int(np.ceil(float(w) / side_len))
-        
-        nzhw = [nz,nh,nw]
+
+        nzhw = [nz, nh, nw]
         self.nzhw = nzhw
-        
-        pad = [ [0, 0],
-                [margin, nz * side_len - z + margin],
-                [margin, nh * side_len - h + margin],
-                [margin, nw * side_len - w + margin]]
+
+        pad = [[0, 0],
+               [margin, nz * side_len - z + margin],
+               [margin, nh * side_len - h + margin],
+               [margin, nw * side_len - w + margin]]
         data = np.pad(data, pad, 'constant')
 
         for iz in range(nz):
@@ -49,22 +51,22 @@ class SplitComb():
                     splits.append(split)
 
         splits = np.concatenate(splits, 0)
-        return splits,nzhw
+        return splits, nzhw
 
-    def combine(self, output, nzhw = None, side_len=None, stride=None, margin=None):
-        
-        if side_len==None:
+    def combine(self, output, nzhw=None, side_len=None, stride=None, margin=None):
+
+        if side_len is None:
             side_len = self.side_len
-        if stride == None:
+        if stride is None:
             stride = self.stride
-        if margin == None:
+        if margin is None:
             margin = self.margin
-        if nzhw==None:
+        if nzhw is None:
             nz = self.nz
             nh = self.nh
             nw = self.nw
         else:
-            nz,nh,nw = nzhw
+            nz, nh, nw = nzhw
         assert(side_len % stride == 0)
         assert(margin % stride == 0)
         side_len /= stride
@@ -96,4 +98,4 @@ class SplitComb():
                     output[sz:ez, sh:eh, sw:ew] = split
                     idx += 1
 
-        return output 
+        return output

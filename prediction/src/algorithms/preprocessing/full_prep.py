@@ -61,8 +61,8 @@ def resample(imgs, spacing, new_spacing, order=2):
         newimg = []
 
         for i in range(n):
-            slice = imgs[:,:,:,i]
-            newslice,true_spacing = resample(slice,spacing,new_spacing)
+            slice = imgs[:, :, :, i]
+            newslice, true_spacing = resample(slice, spacing, new_spacing)
             newimg.append(newslice)
 
         newimg = np.transpose(np.array(newimg), [1, 2, 3, 0])
@@ -99,16 +99,16 @@ def savenpy(dirname, prep_folder, data_path, use_existing=True):
                 [np.min(yy), np.max(yy)],
                 [np.min(zz), np.max(zz)]])
 
-        box = box * np.expand_dims(spacing,1) / np.expand_dims(resolution, 1)
+        box = box * np.expand_dims(spacing, 1) / np.expand_dims(resolution, 1)
         box = np.floor(box).astype('int')
         margin = 5
         extendbox = np.vstack(
             [
-                np.max([[0, 0, 0], box[:,0] - margin], 0),
-                np.min([newshape, box[:,1] + 2 * margin], axis=0).T]).T
+                np.max([[0, 0, 0], box[:, 0] - margin], 0),
+                np.min([newshape, box[:, 1] + 2 * margin], axis=0).T]).T
 
         extendbox = extendbox.astype('int')
-        offset = extendbox.astype('float32')[:,0]
+        offset = extendbox.astype('float32')[:, 0]
 
         convex_mask = m1
         dm1 = process_mask(m1)
@@ -119,7 +119,7 @@ def savenpy(dirname, prep_folder, data_path, use_existing=True):
         bone_thresh = 210
         pad_value = 170
 
-        im[np.isnan(im)] =- 2000
+        im[np.isnan(im)] = - 2000
         sliceim = lumTrans(im)
         shape = np.array(sliceim.shape)
         info = np.concatenate((offset[np.newaxis, ...], spacing[np.newaxis, ...], shape[np.newaxis, ...]))
@@ -139,7 +139,7 @@ def savenpy(dirname, prep_folder, data_path, use_existing=True):
         sliceim = sliceim2[np.newaxis, ...]
         # slices after cropping, Ex: (1, 247, 198, 266), (1, 262, 187, 246)
         np.save(p.join(prep_folder, dirname + '_clean'), sliceim)
-        np.save(p.join(prep_folder, dirname + '_label'), np.array([[0,0,0,0]]))
+        np.save(p.join(prep_folder, dirname + '_label'), np.array([[0, 0, 0, 0]]))
         np.save(p.join(prep_folder, dirname + '_info'), info)
         print(dirname + ' done')
         processed = 1
