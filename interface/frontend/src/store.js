@@ -13,6 +13,9 @@ const actions = {
     axios.get(API_ROOT)
       .then((response) => { commit('GET_ENDPOINTS', response.data) })
   },
+  loadImagery ({ commit }, { id, caseCreated }) {
+    commit('SET_IMAGE_IN_PROGRESS', { id, caseCreated })
+  },
   loadCase ({ commit }, { url }) {
     axios.get(url)
       .then((response) => { commit('SET_CASE_IN_PROGRESS', response.data) })
@@ -47,6 +50,9 @@ const actions = {
 
 const store = new Vuex.Store({
   state: {
+    // The image chosen by the user, to be made into a case
+    imageInProgress: {},
+
     // the case that we are working on, either selected or
     // created on the open and import page
     caseInProgress: {},
@@ -55,6 +61,9 @@ const store = new Vuex.Store({
     topLevelEndpoints: {}
   },
   getters: {
+    imageInProgress (state) {
+      return state.imageInProgress
+    },
     caseInProgress (state) {
       return state.caseInProgress
     },
@@ -92,6 +101,9 @@ const store = new Vuex.Store({
     },
     SET_CASE_IN_PROGRESS (state, _case) {
       state.caseInProgress = _case
+    },
+    SET_IMAGE_IN_PROGRESS (state, _image) {
+      state.imageInProgress = _image
     },
     ADD_CANDIDATE_TO_CASE_IN_PROGRESS (state, candidate) {
       state.caseInProgress.candidates.push(candidate)

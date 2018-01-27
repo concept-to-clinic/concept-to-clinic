@@ -92,6 +92,8 @@
         this.$set(this, 'open', !this.open)
       },
       selectSeries: function (seriesId) {
+        this.$store.dispatch('loadImagery', {'id': seriesId})
+
         this.$emit('selectSeries', seriesId)
       },
       select: function (file) {

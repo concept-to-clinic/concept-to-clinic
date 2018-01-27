@@ -94,6 +94,9 @@
               <i class="fa fa-expand warning" @click="showImport = !showImport"></i>
               </span>
               Import image series for new case
+              <button class="btn btn-success" :disabled="!selectedUri" @click="startNewCase()">
+                Start New Case
+              </button>
             </h5>
           </div>
           <div class="card-block" v-show="showImport">
@@ -103,9 +106,7 @@
             <div class="row">
               <div class="col-md-8">
                 <div class="float-right">
-                  <button class="btn btn-success" :disabled="!selectedUri" @click="startNewCase()">
-                    Start New Case
-                  </button>
+
                 </div>
                 <tree-view class="item left"
                            :model="directories"
@@ -229,6 +230,9 @@
       },
       async startNewCase () {
         await this.$store.dispatch('startNewCase', {'uri': this.selectedUri})
+
+        this.$store.dispatch('loadImagery', { 'id': this.selectedUri, 'caseCreated': true })
+
         setTimeout(() => { this.refreshAvailableCases() }, 1000)
       },
       displayName (case_) {

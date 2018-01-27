@@ -1,11 +1,13 @@
 <template>
   <div class="rsna-standard-template-container">
-  <div class="float-right">
-    <button class="btn btn-lg btn-warning" @click='exportRSNA()'>Export</button>
-  </div>
-  <h1>
-    RSNA Standard Template
-  </h1>
+    <header class="bg-inverse">
+      <h1>
+        RSNA Standard Template
+      </h1>
+      <div class="float-right">
+        <button class="btn btn-lg btn-warning" @click='exportRSNA()'>Export</button>
+      </div>
+    </header>
   <hr>
 
   <section id="technical-parameters">
@@ -229,6 +231,26 @@ export default {
 
 <style lang="scss" scoped>
 .rsna-standard-template-container {
+  header {
+    display: flex;
+    justify-content: space-between;;
+    align-items: center;
+    color: white;
+    padding-left: 2em;
+    font-weight: normal;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+
+    padding-right: 10%;
+
+    h1 {
+      font-size: 2.5em;
+
+      line-height: 2em;
+      margin: 0;
+    }
+
+  }
   .custom-control {
     margin: 0;
   }
