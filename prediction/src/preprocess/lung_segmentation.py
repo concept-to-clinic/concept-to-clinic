@@ -18,7 +18,7 @@ try:
 except ValueError:
     from config import Config
 
-DATA_SHAPE = (512, 512, 1024, 1)
+DATA_SHAPE = (512, 512, 512, 1)
 
 
 def get_z_range(dicom_path):
