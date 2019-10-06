@@ -48,11 +48,11 @@ class CasePleuralSpaces(models.Model):
     left_pleural_space = models.ForeignKey(PleuralSpace,
                                            on_delete=models.CASCADE,
                                            related_name="left_pleural_space",
-                                           null=True)
+                                           null=False)
     right_pleural_space = models.ForeignKey(PleuralSpace,
                                             on_delete=models.CASCADE,
                                             related_name="right_pleural_space",
-                                            null=True)
+                                            null=False)
 
 
 class TechnicalParameters(models.Model):
