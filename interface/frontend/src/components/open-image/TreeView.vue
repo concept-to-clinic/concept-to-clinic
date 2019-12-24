@@ -19,7 +19,6 @@
                    :selectedSeries="selectedSeries"
                    :parent="parent + '/' + model.name"
                    v-on:childSelected="selectSeries"
-                   v-on:selectSeries="selectSeries"
         ></tree-view>
         <li @click="select(file)" v-for="file in model.files" class="text-muted" :key="file.name">{{ file.name }}</li>
       </ul>
@@ -92,7 +91,7 @@
         this.$set(this, 'open', !this.open)
       },
       selectSeries: function (seriesId) {
-        this.$emit('selectSeries', seriesId)
+        this.$store.dispatch('loadImagery', {'id': seriesId})
       },
       select: function (file) {
         // file selected should tell parent series

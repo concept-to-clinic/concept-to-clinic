@@ -91,9 +91,19 @@
           <div class="card-header">
             <h5 class="card-title">
               <span class="float-right">
-              <i class="fa fa-expand warning" @click="showImport = !showImport"></i>
+                <button class="btn btn-sm btn-outline-success" :disabled="!imageInProgress.id" @click="startNewCase()">
+                  Start New Case
+                  <i class="fa fa-arrow-up"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-warning" @click="showImport = !showImport">
+                  Expand Imagery List
+                  <i class="fa fa-expand"></i>
+                </button>
+
               </span>
+
               Import image series for new case
+
             </h5>
           </div>
           <div class="card-block" v-show="showImport">
@@ -102,16 +112,9 @@
             <!-- navigation and preview -->
             <div class="row">
               <div class="col-md-8">
-                <div class="float-right">
-                  <button class="btn btn-success" :disabled="!selectedUri" @click="startNewCase()">
-                    Start New Case
-                  </button>
-                </div>
                 <tree-view class="item left"
                            :model="directories"
-                           :parent="directories.name"
-                           :selectedSeries="selectedUri"
-                           v-on:selectSeries="selectSeries">
+                           :parent="directories.name">
                 </tree-view>
               </div>
               <div class="col-md-4">
@@ -153,7 +156,6 @@
           paths: [],
           state: ''
         },
-        selectedUri: null,
         showImport: false
       }
     },
@@ -165,6 +167,7 @@
         endpoints: 'endpoints',
         caseInProgress: 'caseInProgress',
         caseInProgressIsValid: 'caseInProgressIsValid',
+        imageInProgress: 'imageInProgress',
         candidatesExist: 'candidatesExist'
       })
     },
@@ -223,12 +226,11 @@
           this.selectCase(case_)
         }
       },
-      selectSeries (seriesId) {
-        console.log('selecting ', seriesId)
-        this.selectedUri = seriesId
-      },
       async startNewCase () {
-        await this.$store.dispatch('startNewCase', {'uri': this.selectedUri})
+        if (!this.imageInProgress.id) {
+          return console.error('No Imagery Selected')
+        }
+        await this.$store.dispatch('startNewCase', {'uri': this.imageInProgress.id})
         setTimeout(() => { this.refreshAvailableCases() }, 1000)
       },
       displayName (case_) {
