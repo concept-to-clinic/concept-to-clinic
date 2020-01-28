@@ -111,11 +111,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='casepleuralspaces',
             name='left_pleural_space',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='left_pleural_space', to='cases.PleuralSpace'),
+            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='left_pleural_space', to='cases.PleuralSpace'),
         ),
         migrations.AddField(
             model_name='casepleuralspaces',
             name='right_pleural_space',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='right_pleural_space', to='cases.PleuralSpace'),
+            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, related_name='right_pleural_space', to='cases.PleuralSpace'),
         ),
     ]
